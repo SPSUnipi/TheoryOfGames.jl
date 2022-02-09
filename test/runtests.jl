@@ -48,10 +48,10 @@ example_list = [
         end
     end
 
-    @testset "nucleolus" begin
-        for example in example_list
-            test_example(example, least_core, GLPK.Optimizer)
-        end
-    end
+    # @testset "nucleolus" begin
+    #     for example in example_list
+    #         test_example(example, least_core, GLPK.Optimizer)
+    #     end
+    # end
 
 end

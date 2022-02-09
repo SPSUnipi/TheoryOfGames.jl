@@ -6,6 +6,9 @@ struct EnumMode <: AbstractCalcMode end  # Enumerative technique
 "Return the empty set of the coalition"
 empty_set(player_set::Vector) = Set(similar(player_set, 0))
 
+"Get the total number of coalitions"
+number_coalitions(player_set) = sum(binomial(length(player_set), k) for k=1:length(player_set))
+
 "Function to get the types of the utility arguments and outputs"
 function utility_io_types(player_set::Vector, utility::Function)
     # identify return type of utility for the example of an empty coalition
@@ -57,15 +60,15 @@ function utility_combs(player_set::Vector, utility::Function; verbose=true)
     np = length(player_set)
 
     # number of combinations
-    n_combs = sum(binomial(np, k) for k=1:np)
+    n_combs = number_coalitions(player_set)
 
     if verbose
-        for comb in ProgressBar(combs, total=n_combs)
-            dict_ret[Set(comb)] = utility(comb)
+        for comb in ProgressBar(Set.(combs), total=n_combs)
+            dict_ret[comb] = utility(comb)
         end
     else
-        for comb in combs
-            dict_ret[Set(comb)] = utility(comb)
+        for comb in Set.(combs)
+            dict_ret[comb] = utility(comb)
         end
     end
 
