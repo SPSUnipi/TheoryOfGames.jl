@@ -20,7 +20,7 @@ Outputs
 shapley_value : Dict
     Dictionary of the fair distributions of the profits among the players
 """
-function shapley_value(player_set::Vector, utility::Function, mode::AbstractCalcMode=EnumMode(); verbose=true)
+function shapley_value(player_set::Vector, utility::Function, mode::EnumMode=EnumMode(); verbose=true)
     
     # get the combinations of utilities for every coalition
     utilities = utility_combs(player_set, utility, verbose=verbose)
@@ -45,4 +45,63 @@ function shapley_value(player_set::Vector, utility::Function, mode::AbstractCalc
     end
 
     return sh_val
+end
+
+
+"""
+    least_core(player_set, utility, mode; verbose)
+
+Function to calculte the least core profit distribution for a game described by the utility function
+and the grand coalition of player_set.
+
+Inputs
+------
+player_set : Vector
+    Vector of the players of the coalition
+utility : Function
+    Function that describes the utility function for every coalition in player_set
+optimizer : Any
+    Optimizer function for the JuMP model used for computation purposes
+mode : AbstractCalcMode
+    Calculation mode: enumerative technique
+verbose : Bool
+    When true, it shows a progress bar to describe the current execution status
+
+Outputs
+------
+leastcore_dist : Dict
+    Dictionary of the fair distributions of the profits among the players
+"""
+function least_core(player_set::Vector, utility::Function, optimizer, mode::EnumMode=EnumMode(); verbose=true)
+    
+    # get the combinations of utilities for every coalition
+    utilities = utility_combs(player_set, utility, verbose=verbose)
+
+    # total combinations
+    comb_set = combinations(player_set)
+
+    # initialize JuMP model
+    model_dist = Model(optimizer)
+
+    @variable(model_dist, 0.0 <= profit_dist[u in player_set] <= utilities[Set(player_set)])
+
+    # the gain of the worst group of the current iteration
+    @variable(model_dist, 0.0 <= delta_worst <= utilities[Set(player_set)])
+
+    # specify that the profit of each subset of the group is better off with the grand coalition
+    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
+        sum(profit_dist[u_c] for u_c in comb) >= utilities[Set(comb)] + delta_worst
+    )
+
+    # specify the objective maximize the benefit or remaining in the coalition
+    @objective(model_dist, Max, delta_worst)
+
+    return model_dist
+
+    # optimize
+    optimize!(model_dist)
+
+    lc_dist = Dict(zip(player_set, value.(profit_dist).data))
+
+    return lc_dist
 end

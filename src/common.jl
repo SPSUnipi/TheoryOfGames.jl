@@ -1,6 +1,6 @@
 abstract type AbstractCalcMode end  # abstract type to calculate a quantity
 
-abstract type EnumMode <: AbstractCalcMode end  # Enumerative technique
+struct EnumMode <: AbstractCalcMode end  # Enumerative technique
 
 
 "Return the empty set of the coalition"
