@@ -1,3 +1,8 @@
+abstract type AbstractCalcMode end  # abstract type to calculate a quantity
+
+abstract type EnumMode <: AbstractCalcMode end  # Enumerative technique
+
+
 "Return the empty set of the coalition"
 empty_set(player_set::Vector) = Set(similar(player_set, 0))
 
