@@ -1,6 +1,7 @@
 using Games
 using Test
 using YAML
+using GLPK
 
 include("tests.jl")
 
@@ -38,6 +39,18 @@ example_list = [
     @testset "shapley" begin
         for example in example_list
             test_example(example, shapley_value)
+        end
+    end
+
+    @testset "least_core" begin
+        for example in example_list
+            test_example(example, least_core, GLPK.Optimizer)
+        end
+    end
+
+    @testset "nucleolus" begin
+        for example in example_list
+            test_example(example, least_core, GLPK.Optimizer)
         end
     end
 

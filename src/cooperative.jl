@@ -96,8 +96,6 @@ function least_core(player_set::Vector, utility::Function, optimizer, mode::Enum
     # specify the objective maximize the benefit or remaining in the coalition
     @objective(model_dist, Max, delta_worst)
 
-    return model_dist
-
     # optimize
     optimize!(model_dist)
 
