@@ -88,14 +88,17 @@ function least_core(player_set::Vector, utility::Function, optimizer, mode::Enum
     # initialize JuMP model
     model_dist = Model(optimizer)
 
-    @variable(model_dist, zero(empty_val) <= profit_dist[u in player_set] <= utilities[Set(player_set)])
+    @variable(model_dist, minimum(values(utilities)) <= profit_dist[u in player_set] <= maximum(values(utilities)))
+
+    # specify that the total profit distribution cannot exceed the total benefit
+    @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # the gain of the worst group of the current iteration
-    @variable(model_dist, zero(empty_val) <= delta_worst <= utilities[Set(player_set)])
+    @variable(model_dist, minimum(values(utilities)) <= delta_worst <= maximum(values(utilities)))
 
     # specify that the profit of each subset of the group is better off with the grand coalition
-    @constraint(model_dist, con_subset_profit[comb in Set.(comb_set)],
-        sum(type_val[profit_dist[pl] for pl in comb]) >= utilities[comb] + delta_worst
+    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
+        sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + delta_worst
     )
 
     # specify the objective maximize the benefit or remaining in the coalition
@@ -134,7 +137,7 @@ Outputs
 leastcore_dist : Dict
     Dictionary of the fair distributions of the profits among the players
 """
-function nucleolus(player_set::Vector, utility::Function, optimizer, mode::EnumMode=EnumMode(); verbose=true)
+function nucleolus(player_set::Vector, utility::Function, optimizer, mode::EnumMode=EnumMode(); verbose=true, tol=1e-5)
     
     # get the combinations of utilities for every coalition
     utilities = utility_combs(player_set, utility, verbose=verbose)
@@ -144,59 +147,76 @@ function nucleolus(player_set::Vector, utility::Function, optimizer, mode::EnumM
 
     # get empty coalition
     empty_coal = empty_set(player_set)
-    empty_val = utilities[empty_coalition]
+    empty_val = utilities[empty_coal]
 
     # initialize JuMP model
-    # combinations with a fixed value of the variable
-    fixed_combs = Dict{typeof(empty_coal), typeof(empty_val)}(empty_coal=>empty_val)
 
     # total combinations
-    comb_set = combinations(user_agg_set)
+    comb_set = combinations(player_set)
     n_coalitions = number_coalitions(player_set)
 
     # Definition of JuMP model
     model_dist = Model(optimizer)
 
-    @variable(model_dist, zero(empty_val) <= profit_dist[pl in player_set] <= utilities[Set(player_set)])
+    @variable(model_dist, minimum(values(utilities)) <= profit_dist[pl in player_set] <= maximum(values(utilities)))
 
     # the gain of the worst group of each iteration
-    @variable(model_dist, delta_worst >= zero(empty_val))
+    @variable(model_dist, minimum(values(utilities)) <= delta_worst <= maximum(values(utilities)))
+
+    # specify that the total profit distribution cannot exceed the total benefit
+    @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # specify that the profit of each subset of the group is better off with the grand coalition
-    @constraint(model_dist, con_subset_profit[comb in Set.(comb_set)],
-        sum(type_val[profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + (
-            (comb in keys(fixed_combs)) ? fixed_combs[comb] : delta_worst
-        )
-            
+    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
+        sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + delta_worst
     )
 
     # specify the objective
     @objective(model_dist, Max, delta_worst)
 
-    while length(fixed_combs) != n_coalitions
+    # if option verbose setup progresss bar
+    pbar = verbose ? ProgressBar(1:n_coalitions) : nothing
 
-        ## Model definition
+    fixed_constraints = 1  # initialize constraint to the null value
 
-        
+    while fixed_constraints < n_coalitions
 
         # optimize the iteration
         optimize!(model_dist)
-        #calculate the value of the current delta_worst
+
+        # calculate the value of the current delta_worst
         delta_worst_val = value(delta_worst)
 
-        excluded_combs = get_most_unhappy_coals(
-            user_agg_set, value.(NPV_mod), calc_ref, shapley_agg_dict, delta_worst_val
-        )
+        # get dual variable of con_subset_profit
+        dual_val = dual.(con_subset_profit)
 
-        for ex_comb in excluded_combs
-            if !(ex_comb in keys(fixed_combs)) && (abs(dual(con_subset_profit[ex_comb])) > 1e-6)
-                fixed_combs[ex_comb] = delta_worst_val
-                # printfmtln("add {}", ex_comb)
+        # when the variable is non-zero means that the constraint is binding
+        # thus update the constraint to specify the corresponding value of delta_worst
+        # as limit
+        for comb in comb_set
+            if dual_val[comb] > tol
+                # get current rhs of the constraint
+                pre_rhs = normalized_rhs(con_subset_profit[comb])
+
+                # disable delta_worst for the specific constraint
+                set_normalized_coefficient(con_subset_profit[comb], delta_worst, 0.0)
+
+                # update rhs
+                set_normalized_rhs(con_subset_profit[comb], pre_rhs + delta_worst_val)
+
+                # update number of fixed constraints
+                fixed_constraints += 1
             end
         end
 
-        # printfmtln("delta: {:.2f}, n_combs: {:d}", delta_worst_val, length(excluded_combs))
+        # if option verbose update progress bar
+        if verbose
+            pbar.current = fixed_constraints
+            ProgressBars.display_progress(pbar)
+        end
     end
 
-    return lc_dist
+    nuc_dist = Dict(zip(player_set, value.(profit_dist).data))
+
+    return nuc_dist
 end

@@ -1,15 +1,20 @@
 using Games
 # using Test
-using Gurobi
+using HiGHS
 using JuMP
+using Gurobi
 
+include("tests.jl")
 
+optimizer = optimizer_with_attributes(HiGHS.Optimizer)
 
-utility(x) = 1 in x ? 1.0 : 0.0
-player_set = [1, 2, 3]
+example = Examples.three_users_mapping
 
-utility_combs(player_set, utility)
+player_set = example.player_set
+utility = example.utility
 
-shapley_value(player_set, utility)
+uc = utility_combs(player_set, utility)
 
-a = least_core(player_set, utility, Gurobi.Optimizer)
+sh = shapley_value(player_set, utility)
+
+a = nucleolus(player_set, utility, optimizer)

@@ -1,7 +1,8 @@
 using Games
 using Test
 using YAML
-using GLPK
+using Gurobi
+using JuMP
 
 include("tests.jl")
 
@@ -29,9 +30,11 @@ function test_example(example, testing_function, args...; kwargs...)
 end
 
 example_list = [
-    Examples.three_users_zeromargin,
-    Examples.three_users
+    Examples.three_users_onlyone,
+    Examples.three_users_atleasttwo
 ]
+
+optimizer = optimizer_with_attributes(Gurobi.Optimizer)
 
 
 @testset "Game tests" begin
@@ -44,14 +47,14 @@ example_list = [
 
     @testset "least_core" begin
         for example in example_list
-            test_example(example, least_core, GLPK.Optimizer)
+            test_example(example, least_core, optimizer)
         end
     end
 
-    # @testset "nucleolus" begin
-    #     for example in example_list
-    #         test_example(example, least_core, GLPK.Optimizer)
-    #     end
-    # end
+    @testset "nucleolus" begin
+        for example in example_list
+            test_example(example, nucleolus, optimizer)
+        end
+    end
 
 end
