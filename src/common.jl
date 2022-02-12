@@ -4,13 +4,13 @@ struct EnumMode <: AbstractCalcMode end  # Enumerative technique
 
 
 "Return the empty set of the coalition"
-empty_set(player_set::Vector) = Set(similar(player_set, 0))
+empty_set(player_set) = Set(similar(player_set, 0))
 
 "Get the total number of coalitions"
 number_coalitions(player_set) = sum(binomial(length(player_set), k) for k=1:length(player_set))
 
 "Function to get the types of the utility arguments and outputs"
-function utility_io_types(player_set::Vector, utility::Function)
+function utility_io_types(player_set, utility::Function)
     # identify return type of utility for the example of an empty coalition
     empty_coalition = empty_set(player_set)
     empty_val = utility(empty_coalition)
@@ -42,7 +42,7 @@ Outputs
 utilities : Dict
     Dictionary that specifies the utility of each combination of coalition in player_set
 """
-function utility_combs(player_set::Vector, utility::Function; verbose=true)
+function utility_combs(player_set, utility::Function; verbose=true)
 
     # get types of player_set and utility output
     empty_coalition = empty_set(player_set)

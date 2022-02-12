@@ -30,7 +30,7 @@ module Examples
     )
 
     three_users_mapping = Example(  # https://math.stackexchange.com/questions/1108449/finding-the-nucleolus
-        "three_users_atleasttwo",  # name of example
+        "three_users_mapping",  # name of example
         [1, 2, 3],  # player_set
         x->map_three_users_mapping[Set(x)],  # function
     )

@@ -35,11 +35,12 @@ example_list = [
     Examples.three_users_mapping
 ]
 
-optimizer = optimizer_with_attributes(Gurobi.Optimizer)  #, "NonConvex"=>2)
+optimizer = optimizer_with_attributes(Gurobi.Optimizer)
+
+functions_to_test = [least_core, nucleolus, in_core, var_core]
 
 
 @testset "Game tests" begin
-
 
     @testset "shapley" begin
         for example in example_list
@@ -47,28 +48,11 @@ optimizer = optimizer_with_attributes(Gurobi.Optimizer)  #, "NonConvex"=>2)
         end
     end
 
-    @testset "least_core" begin
-        for example in example_list
-            test_example(example, least_core, optimizer)
+    for f in functions_to_test
+        @testset :(string(f) begin
+            for example in example_list
+                test_example(example, f, optimizer)
+            end
         end
     end
-
-    @testset "nucleolus" begin
-        for example in example_list
-            test_example(example, nucleolus, optimizer)
-        end
-    end
-
-    @testset "in_core" begin
-        for example in example_list
-            test_example(example, in_core, optimizer)
-        end
-    end
-
-    @testset "var_core" begin
-        for example in example_list
-            test_example(example, var_core, optimizer)
-        end
-    end
-
 end
