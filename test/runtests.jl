@@ -2,7 +2,9 @@ using Games
 using Test
 using YAML
 using Gurobi
+using Ipopt
 using JuMP
+using HiGHS
 
 include("tests.jl")
 
@@ -35,7 +37,7 @@ example_list = [
     Examples.three_users_mapping
 ]
 
-optimizer = optimizer_with_attributes(Gurobi.Optimizer)  #, "NonConvex"=>2)
+optimizer = optimizer_with_attributes(Gurobi.Optimizer)  # , "tol"=>1e-4)  #, "NonConvex"=>2)
 
 
 @testset "Game tests" begin

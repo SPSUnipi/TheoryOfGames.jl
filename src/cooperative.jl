@@ -181,10 +181,14 @@ function nucleolus(
 
     fixed_constraints = 1  # initialize constraint to the null value
 
-    while fixed_constraints < n_coalitions
+    # optimize the iteration
+    optimize!(model_dist)
 
-        # optimize the iteration
-        optimize!(model_dist)
+    # last visited combination, to avoid repetitions
+    last_visited_combs = [empty_set(player_set)]
+    visited_nodes = []
+
+    while (fixed_constraints < n_coalitions)
 
         # calculate the value of the current delta_worst
         delta_worst_val = value(delta_worst)
@@ -192,23 +196,44 @@ function nucleolus(
         # get dual variable of con_subset_profit
         dual_val = dual.(con_subset_profit)
 
+        # set of current visited nodes to avoid infinite loops
+        visited_combs = []
+
         # when the variable is non-zero means that the constraint is binding
         # thus update the constraint to specify the corresponding value of delta_worst
         # as limit
         for comb in comb_set
             if dual_val[comb] > tol
-                # get current rhs of the constraint
-                pre_rhs = normalized_rhs(con_subset_profit[comb])
 
-                # disable delta_worst for the specific constraint
-                set_normalized_coefficient(con_subset_profit[comb], delta_worst, 0.0)
+                # update visited combs
+                push!(visited_combs, comb)
 
-                # update rhs
-                set_normalized_rhs(con_subset_profit[comb], pre_rhs + delta_worst_val)
+                if comb ∉ last_visited_combs
+                    # get current rhs of the constraint
+                    pre_rhs = normalized_rhs(con_subset_profit[comb])
 
-                # update number of fixed constraints
-                fixed_constraints += 1
+                    # disable delta_worst for the specific constraint
+                    set_normalized_coefficient(con_subset_profit[comb], delta_worst, 0.0)
+
+                    # update rhs
+                    set_normalized_rhs(con_subset_profit[comb], pre_rhs + delta_worst_val)
+
+                    # update number of fixed constraints
+                    fixed_constraints += 1
+                end
             end
+        end
+
+        # optimize the iteration
+        optimize!(model_dist)
+
+        if Set(last_visited_combs) == Set(visited_nodes)
+            # if previous and visited combs coincide, then
+            # stop the iterations
+            fixed_constraints = n_coalitions
+            break
+        else
+            last_visited_combs = visited_nodes
         end
 
         # if option verbose update progress bar
@@ -216,6 +241,12 @@ function nucleolus(
             pbar.current = fixed_constraints
             ProgressBars.display_progress(pbar)
         end
+    end
+
+    # if option verbose update progress bar
+    if verbose
+        pbar.current = fixed_constraints
+        ProgressBars.display_progress(pbar)
     end
 
     nuc_dist = Dict(zip(player_set, value.(profit_dist).data))
@@ -367,7 +398,6 @@ function var_core(player_set, utility::Function, optimizer, mode::EnumMode=EnumM
     # create the objective function for the problem
     function var_objective(m)
         obj = sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2
-        println(typeof(obj))
         @objective(m,
         Min, 
         obj)
