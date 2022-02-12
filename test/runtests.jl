@@ -73,4 +73,30 @@ optimizer = optimizer_with_attributes(Gurobi.Optimizer)  # , "tol"=>1e-4)  #, "N
         end
     end
 
+    @testset "var_least_core" begin
+        for example in example_list
+            test_example(example, var_least_core, optimizer)
+        end
+    end
+
+    @testset "ref_least_core" begin
+        for example in example_list
+            # reference distribution
+            ref_dist = Dict(
+                zip(example.player_set, fill(0.0, length(example.player_set)))
+            )
+            test_example(example, ref_least_core, ref_dist, optimizer)
+        end
+    end
+
+    @testset "ref_in_core" begin
+        for example in example_list
+            # reference distribution
+            ref_dist = Dict(
+                zip(example.player_set, fill(0.0, length(example.player_set)))
+            )
+            test_example(example, ref_least_core, ref_dist, optimizer)
+        end
+    end
+
 end
