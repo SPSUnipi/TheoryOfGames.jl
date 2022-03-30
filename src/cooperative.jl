@@ -363,7 +363,7 @@ nucleolus_dist : Dict
 """
 function nucleolus(
         player_set,
-        utility_func,
+        utility_func::Function,
         optimizer,
         mode::EnumMode=EnumMode();
         verbose=true,
@@ -759,7 +759,7 @@ specific_least_core_dist : Dict
 """
 function specific_least_core(
         player_set,
-        utility_func,
+        utility_func::Function,
         dist_objective::Function,
         optimizer,
         mode::EnumMode=EnumMode(); 
