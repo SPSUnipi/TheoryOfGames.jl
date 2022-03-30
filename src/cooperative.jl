@@ -80,7 +80,7 @@ function shapley_value(
 
     utilities = utility_combs(player_set, utility_func, verbose=verbose)
 
-    return shapley_value(player_set, utilities, mode, verbose=berbose)
+    return shapley_value(player_set, utilities, mode, verbose=verbose)
 end
 
 
@@ -185,7 +185,7 @@ function least_core(
 
     utilities = utility_combs(player_set, utility_func, verbose=verbose)
 
-    return least_core(player_set, utilities, optimizer, mode, verbose=berbose)
+    return least_core(player_set, utilities, optimizer, mode, verbose=verbose)
 end
 
 
