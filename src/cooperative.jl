@@ -1,5 +1,5 @@
 """
-    shapley_value(player_set, utility, mode; verbose)
+    shapley_value(player_set, utilities, mode; verbose)
 
 Function to calculte the shapley value for a game described by the utility function
 and the grand coalition of player_set.
@@ -50,7 +50,7 @@ function shapley_value(
 end
 
 """
-    shapley_value(player_set, utility, mode; verbose)
+    shapley_value(player_set, utility_func, mode; verbose)
 
 Function to calculte the shapley value for a game described by the utility function
 and the grand coalition of player_set.
@@ -59,7 +59,7 @@ Inputs
 ------
 player_set : Vector
     Vector of the players of the coalition
-utilities : Function
+utility_func : Function
     Function to derive the utility by each coalition
 mode : AbstractCalcMode
     Calculation mode: enumerative technique
@@ -94,8 +94,8 @@ Inputs
 ------
 player_set : Vector
     Vector of the players of the coalition
-    utilities : AbstractDictionary
-        AbstractDictionary storing the utilities for every coalition.
+utilities : AbstractDictionary
+    AbstractDictionary storing the utilities for every coalition.
 optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
 mode : AbstractCalcMode
@@ -152,7 +152,7 @@ end
 
 
 """
-    least_core(player_set, utilities, optimizer, mode; verbose)
+    least_core(player_set, utility_func, optimizer, mode; verbose)
 
 Function to calculte the least core profit distribution for a game described by the utility function
 and the grand coalition of player_set.
@@ -161,8 +161,8 @@ Inputs
 ------
 player_set : Vector
     Vector of the players of the coalition
-    utilities : AbstractDictionary
-        AbstractDictionary storing the utilities for every coalition.
+utility_func : Function
+    Function to derive the utility by each coalition
 optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
 mode : AbstractCalcMode
@@ -177,7 +177,7 @@ leastcore_dist : Dict
 """
 function least_core(
         player_set,
-        utility_func,
+        utility_func::Function,
         optimizer,
         mode::EnumMode=EnumMode();
         verbose=true
@@ -333,6 +333,49 @@ function nucleolus(
 end
 
 
+
+"""
+    nucleolus(player_set, utility_func, mode; verbose, tol)
+
+Function to calculte the nucleolus profit distribution for a game described by the utility function
+and the grand coalition of player_set.
+
+Inputs
+------
+player_set : Vector
+    Vector of the players of the coalition
+utility_func : Function
+    Function to derive the utility by each coalition
+optimizer : Any
+    Optimizer function for the JuMP model used for computation purposes
+mode : AbstractCalcMode
+    Calculation mode: enumerative technique
+verbose : Bool (optional, default true)
+    When true, it shows a progress bar to describe the current execution status
+tol (optional, default 1e-5)
+    Accepted tolerance for identifying the active constraints in the optimization
+    procedure
+
+Outputs
+------
+nucleolus_dist : Dict
+    Dictionary of the fair distributions of the profits among the players
+"""
+function nucleolus(
+        player_set,
+        utility_func,
+        optimizer,
+        mode::EnumMode=EnumMode();
+        verbose=true,
+        tol=1e-5
+    )
+
+    utilities = utility_combs(player_set, utility_func, verbose=verbose)
+
+    return nucleolus(player_set, utilities, optimizer, mode, verbose=verbose, tol=tol)
+end
+
+
 """
     specific_in_core(player_set, utilities, dist_objective, optimizer, mode; verbose)
 
@@ -357,9 +400,6 @@ mode : AbstractCalcMode
     Calculation mode: enumerative technique
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
-utilities (optional, default nothing)
-    AbstractDictionary storing the utilities for every coalition.
-    If it is not provided, it is automatically calculated
 
 Outputs
 ------
@@ -401,6 +441,51 @@ function specific_in_core(
     specific_in_core_dist = Dict(zip(player_set, value.(profit_dist).data))
 
     return specific_in_core_dist
+end
+
+
+"""
+    specific_in_core(player_set, utilities, dist_objective, optimizer, mode; verbose)
+
+Function to calculte a stable profit distribution that belongs to the core
+and maximizes a specific distribution objective specified by dist_objective
+for a game described by the utility function and the grand coalition of player_set.
+
+Inputs
+------
+player_set : Vector
+    Vector of the players of the coalition
+utility_func : Function
+    Function to derive the utility by each coalition
+dist_objective : Function
+    Function to build the objective function of the profit distribution
+    It shall a function with two arguments, which are the JuMP model and the player set,
+    and it shall build the objective functions using the JuMP @NLobjective or @objective
+    commands
+optimizer : Any
+    Optimizer function for the JuMP model used for computation purposes
+mode : AbstractCalcMode
+    Calculation mode: enumerative technique
+verbose : Bool (optional, default true)
+    When true, it shows a progress bar to describe the current execution status
+
+Outputs
+------
+specific_in_core_dist : Dict
+    Dictionary of the fair distributions of the profits among the players
+"""
+function specific_in_core(
+        player_set,
+        utility_func::Function,
+        dist_objective::Function,
+        optimizer,
+        mode::EnumMode=EnumMode();
+        verbose=true,
+    )
+
+    utilities = utility_combs(player_set, utility_func, verbose=verbose)
+
+    return specific_in_core(player_set, utilities, dist_objective, optimizer, mode, verbose=verbose)
 end
 
 
@@ -519,9 +604,6 @@ norm : Any
     factor is 1.0
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
-utilities (optional, default nothing)
-    AbstractDictionary storing the utilities for every coalition.
-    If it is not provided, it is automatically calculated
 
 Outputs
 ------
@@ -573,8 +655,8 @@ Inputs
 ------
 player_set : Vector
     Vector of the players of the coalition
-utility : Function
-    Function that describes the utility function for every coalition in player_set
+utilities : AbstractDictionary
+    AbstractDictionary storing the utilities for every coalition
 dist_objective : Function
     Function to build the objective function of the profit distribution, after the least core
     is obtained
@@ -588,8 +670,6 @@ mode : AbstractCalcMode
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
 utilities (optional, default nothing)
-    AbstractDictionary storing the utilities for every coalition.
-    If it is not provided, it is automatically calculated
 
 Outputs
 ------
@@ -642,6 +722,53 @@ function specific_least_core(
     specific_least_core_dist = Dict(zip(player_set, value.(profit_dist).data))
 
     return specific_least_core_dist
+end
+
+
+"""
+    specific_least_core(player_set, utility_func, dist_objective, optimizer, mode; verbose)
+
+Function to calculte a stable profit distribution that belongs to the least core
+and minimizes a specific objective for the profit allocation among the plauers,
+for a game described by the utility function and the grand coalition of player_set.
+
+Inputs
+------
+player_set : Vector
+    Vector of the players of the coalition
+utility_func : Function
+    Function to derive the utility by each coalition
+dist_objective : Function
+    Function to build the objective function of the profit distribution, after the least core
+    is obtained
+    It shall be a function with two arguments: the JuMP model of the problem and the player set,
+    and the function shall build the desired objective functions using the 
+    JuMP @NLobjective or @objective commands
+optimizer : Any
+    Optimizer function for the JuMP model used for computation purposes
+mode : AbstractCalcMode
+    Calculation mode: enumerative technique
+verbose : Bool (optional, default true)
+    When true, it shows a progress bar to describe the current execution status
+utilities (optional, default nothing)
+
+Outputs
+------
+specific_least_core_dist : Dict
+    Dictionary of the fair distributions of the profits among the players
+"""
+function specific_least_core(
+        player_set,
+        utility_func,
+        dist_objective::Function,
+        optimizer,
+        mode::EnumMode=EnumMode(); 
+        verbose=true,
+    )
+
+    utilities = utility_combs(player_set, utility_func, verbose=verbose)
+
+    return specific_least_core(player_set, utilities, dist_objective, optimizer, mode, verbose=verbose)
 end
 
 
