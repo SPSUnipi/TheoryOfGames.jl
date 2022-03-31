@@ -1,21 +1,21 @@
 """
-least_core(player_set, utilities, optimizer, mode; verbose)
+least_core(mode, player_set, utilities, optimizer; verbose)
 
 Function to calculte the least core profit distribution for a game described by the utility function
 and the grand coalition of player_set.
+This function implements a robust-like approach by using a column generating approach
+to iteratively add constraints to the master problem.
+To do so, the callback function stored in the mode category is exploited
 
 Inputs
 ------
-player_set : Vector
-    Vector of the players of the coalition
-callback_worst_coalition : Function 
-    Function that given a profit distribution scheme, returns a tuple of
+mode : RobustMode
+    Calculation mode that contains the reference to the callback function
+    that given a profit distribution scheme, returns a tuple of
     the set of the coalition with the worst profit and its total benefit to be shared
     callback_worst_coalition accepts one argument (current profit sharing)
 optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
-mode : AbstractCalcMode
-    Calculation mode: enumerative technique
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
 
@@ -26,7 +26,6 @@ Dictionary of the fair distributions of the profits among the players
 """
 function least_core(
         mode::RobustMode,
-        player_set,
         optimizer;
         verbose=true
     )
