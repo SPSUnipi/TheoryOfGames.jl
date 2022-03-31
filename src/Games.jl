@@ -7,7 +7,9 @@ using Formatting
 using JuMP
 
 include("common.jl")
-include("cooperative.jl")
+include("mode_definitions.jl")
+include("cooperative_enumerative.jl")
+include("cooperative_robust.jl")
 
 @exportAll
 
