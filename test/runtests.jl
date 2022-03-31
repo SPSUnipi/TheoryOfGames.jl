@@ -42,7 +42,7 @@ enum_example_list = [
         for example in example_list
 ]
 
-optimizer = optimizer_with_attributes(Gurobi.Optimizer)  # , "tol"=>1e-4)  #, "NonConvex"=>2)
+optimizer = Ipopt.Optimizer  # optimizer_with_attributes(Gurobi.Optimizer)  # , "tol"=>1e-4)  #, "NonConvex"=>2)
 
 
 @testset "Game tests" begin
