@@ -44,7 +44,7 @@ functions_to_test = [least_core, nucleolus, in_core, var_core]
 
     @testset "shapley" begin
         for example in example_list
-            test_example(example, shapley_value)
+            test_enum_example(example, shapley_value)
         end
     end
 

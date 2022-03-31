@@ -9,11 +9,11 @@ using HiGHS
 include("tests.jl")
 
 "Function to test examples"
-function test_example(example, testing_function, args...; kwargs...)
+function test_example(example_name, testing_function, args...; kwargs...)
     # calculate simulations
-    calc_solution = testing_function(example.player_set, example.utility, args...; kwargs...)
+    calc_solution = testing_function(args...; kwargs...)
 
-    path_solution = (string(@__DIR__) * "\\testcases\\" * string(testing_function) * "\\" * example.name * ".yml")
+    path_solution = (string(@__DIR__) * "\\testcases\\" * string(testing_function) * "\\" * example_name * ".yml")
     
     if isfile(path_solution)
         # if the file exists run tests
@@ -37,6 +37,11 @@ example_list = [
     Examples.three_users_mapping
 ]
 
+enum_example_list = [
+    (example.name, EnumMode(example.player_set, example.utility))
+        for example in example_list
+]
+
 optimizer = optimizer_with_attributes(Gurobi.Optimizer)  # , "tol"=>1e-4)  #, "NonConvex"=>2)
 
 
@@ -44,58 +49,58 @@ optimizer = optimizer_with_attributes(Gurobi.Optimizer)  # , "tol"=>1e-4)  #, "N
 
 
     @testset "shapley" begin
-        for example in example_list
-            test_example(example, shapley_value)
+        for (example_name, example_mode) in enum_example_list
+            test_example(example_name, shapley_value, example_mode)
         end
     end
 
     @testset "least_core" begin
-        for example in example_list
-            test_example(example, least_core, optimizer)
+        for (example_name, example_mode) in enum_example_list
+            test_example(example_name, least_core, example_mode, optimizer)
         end
     end
 
     @testset "nucleolus" begin
-        for example in example_list
-            test_example(example, nucleolus, optimizer)
+        for (example_name, example_mode) in enum_example_list
+            test_example(example_name, nucleolus, example_mode, optimizer)
         end
     end
 
     @testset "in_core" begin
-        for example in example_list
-            test_example(example, in_core, optimizer)
+        for (example_name, example_mode) in enum_example_list
+            test_example(example_name, in_core, example_mode, optimizer)
         end
     end
 
     @testset "var_core" begin
-        for example in example_list
-            test_example(example, var_core, optimizer)
+        for (example_name, example_mode) in enum_example_list
+            test_example(example_name, var_core, example_mode, optimizer)
         end
     end
 
     @testset "var_least_core" begin
-        for example in example_list
-            test_example(example, var_least_core, optimizer)
+        for (example_name, example_mode) in enum_example_list
+            test_example(example_name, var_least_core, example_mode, optimizer)
         end
     end
 
     @testset "ref_least_core" begin
-        for example in example_list
+        for (example_name, example_mode) in enum_example_list
             # reference distribution
             ref_dist = Dict(
-                zip(example.player_set, fill(0.0, length(example.player_set)))
+                zip(example_mode.player_set, fill(0.0, length(example_mode.player_set)))
             )
-            test_example(example, ref_least_core, ref_dist, optimizer)
+            test_example(example_name, ref_least_core, example_mode, ref_dist, optimizer)
         end
     end
 
     @testset "ref_in_core" begin
-        for example in example_list
+        for (example_name, example_mode) in enum_example_list
             # reference distribution
             ref_dist = Dict(
-                zip(example.player_set, fill(0.0, length(example.player_set)))
+                zip(example_mode.player_set, fill(0.0, length(example_mode.player_set)))
             )
-            test_example(example, ref_least_core, ref_dist, optimizer)
+            test_example(example_name, ref_least_core, example_mode, ref_dist, optimizer)
         end
     end
 

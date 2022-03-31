@@ -1,11 +1,11 @@
 using Revise
 using Games
 # using Test
-using HiGHS
+# using HiGHS
 using JuMP
 using Gurobi
-using Ipopt
-using GLPK
+#using Ipopt
+#using GLPK
 
 include("tests.jl")
 
@@ -25,4 +25,6 @@ ref_dist = Dict(
     zip(example.player_set, fill(0.0, length(example.player_set)))
 )
 
-a = ref_in_core(player_set, utility, ref_dist, optimizer)
+mode = EnumMode(player_set, utility)
+
+a = ref_in_core(mode, ref_dist, optimizer)
