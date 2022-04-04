@@ -94,15 +94,15 @@ function least_core(
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # the gain of the worst group of the current iteration
-    @variable(model_dist, minimum(values(utilities)) <= delta_worst <= maximum(values(utilities)))
+    @variable(model_dist, minimum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
 
     # specify that the profit of each subset of the group is better off with the grand coalition
     @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
-        sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + delta_worst
+        sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + min_surplus
     )
 
     # specify the objective maximize the benefit or remaining in the coalition
-    @objective(model_dist, Max, delta_worst)
+    @objective(model_dist, Max, min_surplus)
 
     # optimize
     optimize!(model_dist)
@@ -162,18 +162,18 @@ function nucleolus(
     @variable(model_dist, minimum(values(utilities)) <= profit_dist[pl in player_set] <= maximum(values(utilities)))
 
     # the gain of the worst group of each iteration
-    @variable(model_dist, minimum(values(utilities)) <= delta_worst <= maximum(values(utilities)))
+    @variable(model_dist, minimum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
 
     # specify that the total profit distribution cannot exceed the total benefit
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # specify that the profit of each subset of the group is better off with the grand coalition
     @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
-        sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + delta_worst
+        sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + min_surplus
     )
 
     # specify the objective
-    @objective(model_dist, Max, delta_worst)
+    @objective(model_dist, Max, min_surplus)
 
     # if option verbose setup progresss bar
     pbar = verbose ? ProgressBar(1:n_coalitions) : nothing
@@ -189,8 +189,8 @@ function nucleolus(
 
     while (fixed_constraints < n_coalitions)
 
-        # calculate the value of the current delta_worst
-        delta_worst_val = value(delta_worst)
+        # calculate the value of the current min_surplus
+        min_surplus_val = value(min_surplus)
 
         # get dual variable of con_subset_profit
         dual_val = dual.(con_subset_profit)
@@ -199,7 +199,7 @@ function nucleolus(
         visited_combs = []
 
         # when the variable is non-zero means that the constraint is binding
-        # thus update the constraint to specify the corresponding value of delta_worst
+        # thus update the constraint to specify the corresponding value of min_surplus
         # as limit
         for comb in comb_set
             if dual_val[comb] > tol
@@ -211,11 +211,11 @@ function nucleolus(
                     # get current rhs of the constraint
                     pre_rhs = normalized_rhs(con_subset_profit[comb])
 
-                    # disable delta_worst for the specific constraint
-                    set_normalized_coefficient(con_subset_profit[comb], delta_worst, 0.0)
+                    # disable min_surplus for the specific constraint
+                    set_normalized_coefficient(con_subset_profit[comb], min_surplus, 0.0)
 
                     # update rhs
-                    set_normalized_rhs(con_subset_profit[comb], pre_rhs + delta_worst_val)
+                    set_normalized_rhs(con_subset_profit[comb], pre_rhs + min_surplus_val)
 
                     # update number of fixed constraints
                     fixed_constraints += 1
@@ -304,7 +304,7 @@ function specific_in_core(
     # specify that the profit of each subset of the group is better off with the grand coalition
     @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
         sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + 0.0 # the 0.0 is to remind 
-                                            # that delta_worst shall be zero to belong to the core
+                                            # that min_surplus shall be zero to belong to the core
     )
 
     # The objective function is calculated using the dist_objective function
@@ -502,21 +502,21 @@ function specific_least_core(
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # the gain of the worst group of the current iteration
-    @variable(model_dist, minimum(values(utilities)) <= delta_worst <= maximum(values(utilities)))
+    @variable(model_dist, minimum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
 
     # specify that the profit of each subset of the group is better off with the grand coalition
     @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
-        sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + delta_worst
+        sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + min_surplus
     )
 
     # specify the objective maximize the benefit or remaining in the coalition
-    @objective(model_dist, Max, delta_worst)
+    @objective(model_dist, Max, min_surplus)
 
-    # optimize and get the value of delta_worst
+    # optimize and get the value of min_surplus
     optimize!(model_dist)
 
-    # fix the value of delta_worst
-    fix(delta_worst, value(delta_worst), force=true)
+    # fix the value of min_surplus
+    fix(min_surplus, value(min_surplus), force=true)
 
     # Update objective function according to the desired dist_objective function
     dist_objective(model_dist, player_set)
