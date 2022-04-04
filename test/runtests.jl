@@ -1,7 +1,7 @@
 using Games
 using Test
 using YAML
-using Gurobi
+# using Gurobi
 using Ipopt
 using JuMP
 using HiGHS
