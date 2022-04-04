@@ -69,3 +69,11 @@ function utility_combs(player_set, utility::Function; verbose=true)
 
     return dict_ret
 end
+
+
+"""
+
+Auxiliary function to compute the relative tolerance between two quantities x and y
+
+"""
+compute_relative_tol(x, y, norm=abs, atol=1e-6) = norm(x-y) / (atol + max(x, y))
