@@ -29,12 +29,18 @@ Fields
 ------
 player_set
     Vector of players
+callback_benefit_by_coalition : Function
+    Callback function that is used to determine what is the benefit of a coalition
+    and the total benefit of the coalition
 callback_worst_coalition : Function
     Callback function that is used to determine what is the coalition with the worst benefit
     and the total benefit of the coalition
 """
 struct RobustMode <: AbstractCalcMode  # Robust-Optimization technique
-    player_set  # AbstractVector of the players
+    # AbstractVector of the players
+    player_set
+    # Callback function used to obtain the benefit of a coalition
+    callback_benefit_by_coalition::Function
     # Callback function used in the iterative approaches
     callback_worst_coalition::Function
 end
