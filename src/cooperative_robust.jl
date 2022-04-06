@@ -73,8 +73,8 @@ function least_core(
     # specify the objective maximize the benefit or remaining in the coalition
     @objective(model_dist, Max, min_surplus)
 
-    # initialization of last min_surplus value
-    last_min_surplus = upper_bound
+    # initialization of the min_surplus of the inner problem
+    lower_problem_min_surplus = upper_bound
 
     # list of constraints
     history = NamedTuple[]
@@ -104,12 +104,12 @@ function least_core(
 
         # if verbose print log
         if verbose
-            rel_tol = compute_relative_tol(last_min_surplus, value_min_surplus)
-            printfmtln(format_print_iter, iter, last_min_surplus, value_min_surplus, rel_tol)
+            rel_tol = compute_relative_tol(lower_problem_min_surplus, value_min_surplus)
+            printfmtln(format_print_iter, iter, lower_problem_min_surplus, value_min_surplus, rel_tol)
         end
 
         # check if convergence has been reached
-        if isapprox(value_min_surplus, last_min_surplus, rtol=rtol, atol=atol, norm=abs)
+        if isapprox(value_min_surplus, lower_problem_min_surplus, rtol=rtol, atol=atol, norm=abs)
             # convergence reached
             continue_while = false
         else
@@ -117,9 +117,10 @@ function least_core(
 
             current_profit_dist = value.(profit_dist)
 
-            # get the coalition (worst_coal_set) with the least benefit
-            # and the total benefit of that coalition (worst_coal_benefit)
-            worst_coal_set, worst_coal_benefit = callback_worst_coalition(current_profit_dist)
+            # get (1) the coalition (worst_coal_set) with the least benefit,
+            # (2) the total benefit of that coalition (worst_coal_benefit), and
+            # (3) the minimum surplus of that coalition
+            worst_coal_set, worst_coal_benefit, lower_problem_min_surplus = callback_worst_coalition(current_profit_dist)
 
             # specify that the profit of each subset of the group is better off with the grand coalition
             con_it = @constraint(
@@ -132,7 +133,9 @@ function least_core(
                 current_profit=current_profit_dist,
                 worst_coal=worst_coal_set,
                 benefit_coal=worst_coal_benefit,
-                constraint=con_it
+                value_min_surplus=value_min_surplus,
+                lower_problem_min_surplus=lower_problem_min_surplus,
+                constraint=con_it,
             )
 
             # add the iteration to the history
