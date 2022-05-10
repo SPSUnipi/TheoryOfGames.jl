@@ -8,6 +8,11 @@ using HiGHS
 
 include("tests.jl")
 
+# constant for the optimization and testing
+const ATOL = 1e-4
+const OPTIMIZER = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0, "tol"=>1e-6)
+# optimizer = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0)  #, "tol"=>1e-4)  #, "NonConvex"=>2)
+
 "Function to test examples"
 function test_example(example_name, testing_function, args...; kwargs...)
     # calculate simulations
@@ -31,6 +36,30 @@ function test_example(example_name, testing_function, args...; kwargs...)
 
 end
 
+"Function to create RobustMode out of an example"
+function to_RobustMode(example)
+    util_combs = utility_combs(example.player_set, example.utility)
+
+    let util_combs=util_combs
+        
+        callback_benefit_by_coalition = (coal)->util_combs[Set(coal)]
+
+        function callback_worst_coalition(profit_dist)
+            min_surplus_combs = Dict(
+                comb=>sum(Float64[profit_dist[c] for c in comb]) - util_combs[Set(comb)]
+                for comb in keys(util_combs)
+            )
+            min_surplus, least_benefit_coal = findmin(min_surplus_combs)
+            return least_benefit_coal, util_combs[Set(least_benefit_coal)], min_surplus
+        end
+
+        return Games.RobustMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
+    end
+end
+
+"Function to create EnumMode out of an example"
+to_EnumMode(example) = EnumMode(example.player_set, example.utility)
+
 example_list = [
     Examples.three_users_onlyone,
     Examples.three_users_atleasttwo,
@@ -38,69 +67,119 @@ example_list = [
 ]
 
 enum_example_list = [
-    (example.name, EnumMode(example.player_set, example.utility))
+    (example.name, to_EnumMode(example))
         for example in example_list
 ]
 
-optimizer = Ipopt.Optimizer  # optimizer_with_attributes(Gurobi.Optimizer)  # , "tol"=>1e-4)  #, "NonConvex"=>2)
+robust_example_list = [
+    (example.name, to_RobustMode(example))
+        for example in example_list
+]
 
 
-@testset "Game tests" begin
+@testset "Game tests - Enumeration" begin
 
 
     @testset "shapley" begin
-        for (example_name, example_mode) in enum_example_list
-            test_example(example_name, shapley_value, example_mode)
+        println("TEST SET - SHAPLEY")
+        for example in example_list
+            test_example("ENUM_" * example.name, shapley_value, to_EnumMode(example))
         end
     end
 
     @testset "least_core" begin
-        for (example_name, example_mode) in enum_example_list
-            test_example(example_name, least_core, example_mode, optimizer)
+        println("TEST SET - LEAST CORE")
+        for example in example_list
+            test_example("ENUM_" * example.name, least_core, to_EnumMode(example), OPTIMIZER)
         end
     end
 
     @testset "nucleolus" begin
-        for (example_name, example_mode) in enum_example_list
-            test_example(example_name, nucleolus, example_mode, optimizer)
+        println("TEST SET - NUCLEOLUS")
+        for example in example_list
+            test_example("ENUM_" * example.name, nucleolus, to_EnumMode(example), OPTIMIZER)
         end
     end
 
     @testset "in_core" begin
-        for (example_name, example_mode) in enum_example_list
-            test_example(example_name, in_core, example_mode, optimizer)
+        println("TEST SET - IN CORE")
+        for example in example_list
+            test_example("ENUM_" * example.name, in_core, to_EnumMode(example), OPTIMIZER)
+        end
+    end
+
+    @testset "verify_in_core" begin
+        println("TEST SET - VERIFY IN CORE")
+        for example in example_list
+
+            player_set = example.player_set
+            example_mode = to_EnumMode(example)
+
+            # obtain an in-core solution
+            val_dist = in_core(example_mode, OPTIMIZER)
+
+            # test that the in-core solution is actually recognized in the core
+            @test verify_in_core(val_dist, example_mode, OPTIMIZER) == true
+
+            # create an artificial solution likely not to be in the core
+            equal_vals = JuMP.Containers.DenseAxisArray(
+                fill(sum(values(val_dist))/length(player_set), length(player_set)), player_set
+            )
+
+            # test that the artificial distribution does not belong to the core
+            @test verify_in_core(equal_vals, example_mode, OPTIMIZER) == false
         end
     end
 
     @testset "var_core" begin
-        for (example_name, example_mode) in enum_example_list
-            test_example(example_name, var_core, example_mode, optimizer)
+        println("TEST SET - VAR CORE")
+        for example in example_list
+            test_example("ENUM_" * example.name, var_core, to_EnumMode(example), OPTIMIZER)
         end
     end
 
     @testset "var_least_core" begin
-        for (example_name, example_mode) in enum_example_list
-            test_example(example_name, var_least_core, example_mode, optimizer)
+        println("TEST SET - VAR LEAST CORE")
+        for example in example_list
+            test_example("ENUM_" * example.name, var_least_core, to_EnumMode(example), OPTIMIZER)
         end
     end
 
     @testset "ref_least_core" begin
-        for (example_name, example_mode) in enum_example_list
+        println("TEST SET - REF LEAST CORE")
+        for example in example_list
             # reference distribution
             ref_dist = Dict(
-                zip(example_mode.player_set, fill(0.0, length(example_mode.player_set)))
+                zip(example.player_set, fill(0.0, length(example.player_set)))
             )
-            test_example(example_name, ref_least_core, example_mode, ref_dist, optimizer)
+            test_example("ENUM_" * example.name, ref_least_core, to_EnumMode(example), ref_dist, OPTIMIZER)
         end
     end
 
     @testset "ref_in_core" begin
-        for (example_name, example_mode) in enum_example_list
+        println("TEST SET - REF IN CORE")
+        for example in example_list
             # reference distribution
             ref_dist = Dict(
-                zip(example_mode.player_set, fill(0.0, length(example_mode.player_set)))
+                zip(example.player_set, fill(0.0, length(example.player_set)))
             )
-            test_example(example_name, ref_least_core, example_mode, ref_dist, optimizer)
+            test_example("ENUM_" * example.name, ref_least_core, to_EnumMode(example), ref_dist, OPTIMIZER)
+        end
+    end
+
+end
+
+@testset "Games tests - Robust" begin
+    
+    @testset "robust_least_core" begin
+        println("TEST SET - ROBUST LEAST CORE")
+        for example in example_list
+
+            # obtain output from robust least core
+            result_value = least_core(to_RobustMode(example), OPTIMIZER)
+
+            # test that the solution belongs to the core
+            @test verify_in_core(result_value, to_EnumMode(example), OPTIMIZER) == true
         end
     end
 

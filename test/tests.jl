@@ -1,5 +1,4 @@
 module Examples
-
     struct Example
         name
         player_set
