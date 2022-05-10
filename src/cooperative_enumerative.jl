@@ -313,7 +313,11 @@ function specific_in_core(
     # optimize
     optimize!(model_dist)
 
-    specific_in_core_dist = Dict(zip(player_set, value.(profit_dist).data))
+    if termination_status(model_dist) in [JuMP.MOI.OPTIMAL, JuMP.MOI.LOCALLY_SOLVED]
+        specific_in_core_dist = Dict(zip(player_set, value.(profit_dist).data))
+    else
+        specific_in_core_dist = nothing
+    end
 
     return specific_in_core_dist
 end
@@ -449,6 +453,50 @@ function ref_in_core(
         optimizer; 
         kwargs...
     )
+end
+
+
+"""
+    verify_in_core(profit_dist, mode, optimizer; verbose, utilities)
+
+Function to calculte whether a given profit distribution belongs to the core.
+The game shall be described by the utility function and the grand coalition of player_set.
+
+Inputs
+------
+mode : EnumMode
+    Calculation mode: enumerative technique
+optimizer : Any
+    Optimizer function for the JuMP model used for computation purposes
+verbose : Bool (optional, default true)
+    When true, it shows a progress bar to describe the current execution status
+
+Outputs
+------
+in_core_dist : Dict
+    Dictionary of the fair distributions of the profits among the players
+"""
+function verify_in_core(profit_dist, mode::EnumMode, optimizer; kwargs...)
+    
+    
+    function verify_in_core_obj_and_constraint(m, player_set)
+        # create feasibility problem
+        @objective(m, Max, 0.0)
+
+        # fix profit distribution
+        fix.(m[:profit_dist], profit_dist, force=true)
+    end
+
+    # calculate return value
+    ret_value = specific_in_core(
+        mode,
+        verify_in_core_obj_and_constraint,
+        optimizer;
+        kwargs...
+    )
+
+    # if return value is nothing, the problem is infeasible, hence the solution does not belong to the core
+    return !isnothing(ret_value)
 end
 
 
