@@ -27,6 +27,8 @@ upper_bound : Number (optional, default nothing)
     When nothing, the value is automatically set to the benefit of the grand coalition
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
+raw_outputs : Bool (optional, default false)
+    When true, it returns all raw outputs
 
 Outputs
 ------
@@ -44,6 +46,7 @@ function least_core(
         lower_bound=0.0,
         upper_bound=nothing,
         verbose=true,
+        raw_outputs=false,
     )
 
     player_set = mode.player_set
@@ -144,8 +147,13 @@ function least_core(
     end
 
     # result of the profit distribution
-    profit_distribution = value.(profit_dist)
+    profit_distribution = Dict(zip(player_set, value.(profit_dist).data))
     min_surplus = value(min_surplus)
 
-    return profit_distribution, min_surplus, history
+    if raw_outputs
+        return profit_distribution, min_surplus, history
+    else
+        return profit_distribution
+    end
+
 end
