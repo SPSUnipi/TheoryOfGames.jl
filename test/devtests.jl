@@ -12,15 +12,16 @@ include("tests.jl")
 
 function to_RobustMode(example)
     util_combs = utility_combs(example.player_set, example.utility)
+    keys_no_grand_coalition = setdiff(keys(util_combs), [Set(), Set(example.player_set)])
 
-    let util_combs=util_combs
+    let util_combs=util_combs, keys_no_grand_coalition=keys_no_grand_coalition
         
         callback_benefit_by_coalition = (coal)->util_combs[Set(coal)]
 
         function callback_worst_coalition(profit_dist)
             min_surplus_combs = Dict(
                 comb=>sum(Float64[profit_dist[c] for c in comb]) - util_combs[Set(comb)]
-                for comb in keys(util_combs)
+                for comb in keys_no_grand_coalition
             )
             min_surplus, least_benefit_coal = findmin(min_surplus_combs)
             return least_benefit_coal, util_combs[Set(least_benefit_coal)], min_surplus
@@ -57,12 +58,12 @@ val_enum = in_core(enum_mode, optimizer)
 
 mode_example = to_RobustMode(example)
 
-profit_distribution, min_surplus, history = least_core(mode_example, optimizer)
+profit_distribution, min_surplus, history = least_core(mode_example, optimizer, raw_outputs=true)
+#[9.249999967500331, 5.500000064999378, 9.24999996750029]
 
+# p_test = JuMP.Containers.DenseAxisArray(
+#     [8,8,8],
+#     [1,2,3]
+# )
 
-p_test = JuMP.Containers.DenseAxisArray(
-    [8,8,8],
-    [1,2,3]
-)
-
-in_core_check = verify_in_core(profit_distribution, enum_mode, optimizer)
+# in_core_check = verify_in_core(profit_distribution, enum_mode, optimizer)

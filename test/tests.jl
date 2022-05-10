@@ -34,4 +34,21 @@ module Examples
         x->map_three_users_mapping[Set(x)],  # function
     )
 
+    map_three_users_mapping_mod = Dict( # adapted from https://math.stackexchange.com/questions/1108449/finding-the-nucleolus
+        Set([])=>0.0,
+        Set([1])=>2.,
+        Set([2])=>5.,
+        Set([3])=>4.,
+        Set([1,2])=>14.,
+        Set([1,3])=>18.,
+        Set([2,3])=>9.,
+        Set([1,2,3])=>40.,  # modified
+    )
+
+    three_users_mapping_mod = Example(  # https://math.stackexchange.com/questions/1108449/finding-the-nucleolus
+        "three_users_mapping_mod",  # name of example
+        [1, 2, 3],  # player_set
+        x->map_three_users_mapping_mod[Set(x)],  # function
+    )
+
 end

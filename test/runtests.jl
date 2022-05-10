@@ -39,15 +39,16 @@ end
 "Function to create RobustMode out of an example"
 function to_RobustMode(example)
     util_combs = utility_combs(example.player_set, example.utility)
+    keys_no_grand_coalition = setdiff(keys(util_combs), [Set(), Set(example.player_set)])
 
-    let util_combs=util_combs
+    let util_combs=util_combs, keys_no_grand_coalition=keys_no_grand_coalition
         
         callback_benefit_by_coalition = (coal)->util_combs[Set(coal)]
 
         function callback_worst_coalition(profit_dist)
             min_surplus_combs = Dict(
                 comb=>sum(Float64[profit_dist[c] for c in comb]) - util_combs[Set(comb)]
-                for comb in keys(util_combs)
+                for comb in keys_no_grand_coalition
             )
             min_surplus, least_benefit_coal = findmin(min_surplus_combs)
             return least_benefit_coal, util_combs[Set(least_benefit_coal)], min_surplus
@@ -63,17 +64,7 @@ to_EnumMode(example) = EnumMode(example.player_set, example.utility)
 example_list = [
     Examples.three_users_onlyone,
     Examples.three_users_atleasttwo,
-    Examples.three_users_mapping
-]
-
-enum_example_list = [
-    (example.name, to_EnumMode(example))
-        for example in example_list
-]
-
-robust_example_list = [
-    (example.name, to_RobustMode(example))
-        for example in example_list
+    Examples.three_users_mapping,
 ]
 
 

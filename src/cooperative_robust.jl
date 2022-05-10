@@ -85,14 +85,15 @@ function least_core(
     # initialization while condition
     continue_while = true
     iter = 0
+    added_coalition = "Init"
 
     # printing formats
-    format_print_head = "{:<12s} {:^12s} {:^12s} {:^12s}"  # for the header
-    format_print_iter = "{:<12s} {:> 10.2e} {:> 10.2e} {:> 10.2e}"  # for the iterations
+    format_print_head = "{:<15s} {:^15s} {:^15s} {:^15s} {:<s}"  # for the header
+    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2e} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
-        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tolerance")
+        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tolerance", "Added coalition")
     end
 
     while continue_while
@@ -108,7 +109,7 @@ function least_core(
         # if verbose print log
         if verbose
             rel_tol = compute_relative_tol(lower_problem_min_surplus, value_min_surplus)
-            printfmtln(format_print_iter, iter, lower_problem_min_surplus, value_min_surplus, rel_tol)
+            printfmtln(format_print_iter, iter, lower_problem_min_surplus, value_min_surplus, rel_tol, added_coalition)
         end
 
         # check if convergence has been reached
@@ -125,11 +126,15 @@ function least_core(
             # (3) the minimum surplus of that coalition
             worst_coal_set, worst_coal_benefit, lower_problem_min_surplus = callback_worst_coalition(current_profit_dist)
 
-            # specify that the profit of each subset of the group is better off with the grand coalition
-            con_it = @constraint(
-                model_dist,
-                sum([profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
-            )
+            if worst_coal_set != Set(player_set)
+                # specify that the profit of each subset of the group is better off with the grand coalition
+                con_it = @constraint(
+                    model_dist,
+                    sum([profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
+                )
+            else
+                con_it = nothing
+            end
 
             # data of the iteration
             iter_data = (
@@ -140,6 +145,9 @@ function least_core(
                 lower_problem_min_surplus=lower_problem_min_surplus,
                 constraint=con_it,
             )
+
+            # update coalition
+            added_coalition = string(worst_coal_set) * ": " * string(current_profit_dist.data)
 
             # add the iteration to the history
             push!(history, iter_data)
