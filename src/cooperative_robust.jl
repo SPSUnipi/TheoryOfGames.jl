@@ -74,7 +74,7 @@ function least_core(
     @objective(model_dist, Max, min_surplus)
 
     # initialization of the min_surplus of the inner problem
-    lower_problem_min_surplus = upper_bound
+    lower_problem_min_surplus = lower_bound
 
     # list of constraints
     history = NamedTuple[]
