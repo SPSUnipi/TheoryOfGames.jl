@@ -484,7 +484,9 @@ function verify_in_core(profit_dist, mode::EnumMode, optimizer; kwargs...)
         @objective(m, Max, 0.0)
 
         # fix profit distribution
-        fix.(m[:profit_dist], profit_dist, force=true)
+        for p in axes(m[:profit_dist])[1]
+            fix(m[:profit_dist][p], profit_dist[p], force=true)
+        end
     end
 
     # calculate return value
