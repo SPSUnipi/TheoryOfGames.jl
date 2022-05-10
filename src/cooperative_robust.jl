@@ -93,7 +93,7 @@ function least_core(
 
     # if verbose, print header
     if verbose
-        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tolerance", "Added coalition")
+        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tolerance", "Added coalition : benefit allocation")
     end
 
     while continue_while
