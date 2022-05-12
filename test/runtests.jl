@@ -64,6 +64,7 @@ to_EnumMode(example) = EnumMode(example.player_set, example.utility)
 example_list = [
     Examples.three_users_onlyone,
     Examples.three_users_atleasttwo,
+    Examples.three_users_atleasttwo_string,
     Examples.three_users_mapping,
 ]
 
@@ -154,7 +155,7 @@ example_list = [
             ref_dist = Dict(
                 zip(example.player_set, fill(0.0, length(example.player_set)))
             )
-            test_example("ENUM_" * example.name, ref_least_core, to_EnumMode(example), ref_dist, OPTIMIZER)
+            test_example("ENUM_" * example.name, ref_in_core, to_EnumMode(example), ref_dist, OPTIMIZER)
         end
     end
 

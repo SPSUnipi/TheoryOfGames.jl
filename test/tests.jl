@@ -17,6 +17,12 @@ module Examples
         x-> (1 in x) && length(x) > 1 ? 1.0 : 0.0,  # function
     )
 
+    three_users_atleasttwo_string = Example(  # https://en.wikipedia.org/wiki/Shapley_value
+        three_users_atleasttwo.name * "_string",  # name of example
+        string.(three_users_atleasttwo.player_set),  # player_set
+        x-> ("1" in x) && length(x) > 1 ? 1.0 : 0.0,  # function
+    )
+
     map_three_users_mapping = Dict( # https://math.stackexchange.com/questions/1108449/finding-the-nucleolus
         Set([])=>0.0,
         Set([1])=>2.,
