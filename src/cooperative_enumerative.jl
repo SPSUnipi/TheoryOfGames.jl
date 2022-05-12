@@ -36,7 +36,7 @@ function shapley_value(
         sh_val[pl] = 1/n_pl*(
             sum(type_output[
                 (utilities[union(Set(comb), [pl])] - utilities[Set(comb)])/ binomial(n_pl-1, length(comb))
-                for comb in combinations(setdiff(player_set, pl))
+                for comb in combinations(setdiff(player_set, [pl]))
             ])  # general case except empty set
             + 
             (utilities[union(empty_coal, [pl])] - utilities[empty_coal]) / binomial(n_pl-1, 0)  # case comb == empty_set
