@@ -5,6 +5,8 @@ using YAML
 using Ipopt
 using JuMP
 using HiGHS
+using FileIO
+using JLD2
 
 include("tests.jl")
 
@@ -173,6 +175,32 @@ end
             # test that the solution belongs to the core
             @test verify_in_core(result_value, to_EnumMode(example), OPTIMIZER) == true
         end
+    end
+
+end
+
+@testset "IO tests" begin
+    
+    println("TEST IO")
+    for example in example_list
+
+        enum_mode = to_EnumMode(example)
+    
+        path_solution = (
+            string(@__DIR__) * 
+            "\\testcases\\io\\" * 
+            string(typeof(enum_mode)) * "\\" 
+            * example.name * ".jld2"
+        )
+    
+        # obtain output from robust least core
+        @test_nowarn save(path_solution, enum_mode)
+
+        # test that the solution belongs to the core
+        loaded_mode = load(path_solution, EnumMode())
+
+        @test enum_mode.player_set == loaded_mode.player_set
+        @test enum_mode.utilities == loaded_mode.utilities
     end
 
 end

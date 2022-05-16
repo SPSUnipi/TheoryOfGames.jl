@@ -16,6 +16,15 @@ struct EnumMode <: AbstractCalcMode  # Enumerative technique
         return new(player_set, utility_combs(player_set, utility; verbose=verbose))
     end
 
+    function EnumMode(input_file::String)
+        # load YAML file
+        data = YAML.load_file(file_name)
+        player_set_ = get(data, "user_set", [])
+        utilities_ = get(data, "user_set", Dict([]=>0.0))
+
+        return new(player_set_, utilities_)
+    end
+
     function EnumMode(::Any, ::Any)
         throw(ArgumentError("Invalid arguments for EnumMode"))
     end

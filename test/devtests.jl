@@ -4,6 +4,9 @@ using Games
 # using HiGHS
 using JuMP
 using Ipopt
+using YAML
+using FileIO
+using JLD2
 #using GLPK
 
 include("tests.jl")
@@ -34,15 +37,18 @@ end
 optimizer = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0)
 # optimizer = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0)  #, "tol"=>1e-4)  #, "NonConvex"=>2)
 
-example = Examples.three_users_mapping
+example = Examples.three_users_atleasttwo_string
 
 player_set = example.player_set
 utility = example.utility
 
 enum_mode = Games.EnumMode(example.player_set, example.utility)
 
+save("test.jld2", enum_mode)
 
-val_enum = in_core(enum_mode, optimizer)
+loaded_enum = load("test.jld2", EnumMode())
+
+# val_enum = in_core(enum_mode, optimizer)
 
 # uc = utility_combs(player_set, utility)
 
@@ -56,9 +62,9 @@ val_enum = in_core(enum_mode, optimizer)
 
 # a = ref_in_core(mode, ref_dist, optimizer)
 
-mode_example = to_RobustMode(example)
+# mode_example = to_RobustMode(example)
 
-profit_distribution, min_surplus, history = least_core(mode_example, optimizer, raw_outputs=true)
+# profit_distribution, min_surplus, history = least_core(mode_example, optimizer, raw_outputs=true)
 #[9.249999967500331, 5.500000064999378, 9.24999996750029]
 
 # p_test = JuMP.Containers.DenseAxisArray(
