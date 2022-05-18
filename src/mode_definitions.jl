@@ -52,4 +52,21 @@ struct RobustMode <: AbstractCalcMode  # Robust-Optimization technique
     callback_benefit_by_coalition::Function
     # Callback function used in the iterative approaches
     callback_worst_coalition::Function
+
+    function RobustMode(player_set_, callback_benefit_by_coalition_::Function, callback_worst_coalition_::Function)
+        return new(player_set_, callback_benefit_by_coalition_, callback_worst_coalition_)
+    end
+
+    # function EnumMode(input_file::String)
+    #     # load YAML file
+    #     data = YAML.load_file(file_name)
+    #     player_set_ = get(data, "user_set", [])
+    #     utilities_ = get(data, "user_set", Dict([]=>0.0))
+
+    #     return new(player_set_, utilities_)
+    # end
+
+    function RobustMode(::Any, ::Any)
+        throw(ArgumentError("Invalid arguments for EnumMode"))
+    end
 end
