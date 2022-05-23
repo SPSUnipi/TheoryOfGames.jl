@@ -5,14 +5,14 @@ abstract type AbstractCalcMode end  # abstract type to calculate a quantity
     utilities of a Game
 """
 struct EnumMode <: AbstractCalcMode  # Enumerative technique
-    player_set  # AbstractVector of the players
+    player_set::Union{Set, Vector}  # AbstractVector of the players
     utilities  # AbstractDict of utility functions
 
-    function EnumMode(player_set_=[], utilities_::AbstractDict=Dict())
+    function EnumMode(player_set_::Union{Set, Vector}=[], utilities_::AbstractDict=Dict())
         return new(player_set_, utilities_)
     end
 
-    function EnumMode(player_set, utility::Function; verbose=true)
+    function EnumMode(player_set::Union{Set, Vector}, utility::Function; verbose=true)
         return new(player_set, utility_combs(player_set, utility; verbose=verbose))
     end
 
@@ -47,13 +47,13 @@ callback_worst_coalition : Function
 """
 struct RobustMode <: AbstractCalcMode  # Robust-Optimization technique
     # AbstractVector of the players
-    player_set
+    player_set::Union{Set, Vector}
     # Callback function used to obtain the benefit of a coalition
     callback_benefit_by_coalition::Function
     # Callback function used in the iterative approaches
     callback_worst_coalition::Function
 
-    function RobustMode(player_set_, callback_benefit_by_coalition_::Function, callback_worst_coalition_::Function)
+    function RobustMode(player_set_::Union{Set, Vector}, callback_benefit_by_coalition_::Function, callback_worst_coalition_::Function)
         return new(player_set_, callback_benefit_by_coalition_, callback_worst_coalition_)
     end
 
