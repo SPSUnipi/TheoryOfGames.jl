@@ -88,7 +88,7 @@ function least_core(
     # initialize JuMP model
     model_dist = Model(optimizer)
 
-    @variable(model_dist, minimum(values(utilities)) <= profit_dist[u in player_set] <= maximum(values(utilities)))
+    @variable(model_dist, -maximum(values(utilities)) <= profit_dist[u in player_set] <= maximum(values(utilities)))
 
     # specify that the total profit distribution cannot exceed the total benefit
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
@@ -156,7 +156,7 @@ function nucleolus(
     # Definition of JuMP model
     model_dist = Model(optimizer)
 
-    @variable(model_dist, minimum(values(utilities)) <= profit_dist[pl in player_set] <= maximum(values(utilities)))
+    @variable(model_dist, -maximum(values(utilities)) <= profit_dist[pl in player_set] <= maximum(values(utilities)))
 
     # the gain of the worst group of each iteration
     @variable(model_dist, -maximum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
@@ -293,7 +293,7 @@ function specific_in_core(
     # initialize JuMP model
     model_dist = Model(optimizer)
 
-    @variable(model_dist, minimum(values(utilities)) <= profit_dist[u in player_set] <= maximum(values(utilities)))
+    @variable(model_dist, -maximum(values(utilities)) <= profit_dist[u in player_set] <= maximum(values(utilities)))
 
     # specify that the total profit distribution cannot exceed the total benefit
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
@@ -544,7 +544,7 @@ function specific_least_core(
     # initialize JuMP model
     model_dist = Model(optimizer)
 
-    @variable(model_dist, minimum(values(utilities)) <= profit_dist[u in player_set] <= maximum(values(utilities)))
+    @variable(model_dist, -maximum(values(utilities)) <= profit_dist[u in player_set] <= maximum(values(utilities)))
 
     # specify that the total profit distribution cannot exceed the total benefit
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])

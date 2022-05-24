@@ -20,7 +20,7 @@ rtol : Number (optional, default 1e-6)
     Relative tolerance of the convergence process
 atol : Number (optional, default 1e-6)
     Absolute tolerance of the convergence process
-lower_bound : Number (optional, default 0.0)
+lower_bound : Number (optional, default nothing)
     Lower bound of the variables of the problem (benefit distribution and margin of the worst coalition)
 upper_bound : Number (optional, default nothing)
     Upper bound of the variables of the problem (benefit distribution and margin of the worst coalition)
@@ -43,7 +43,7 @@ function least_core(
         optimizer;
         rtol=1e-6,
         atol=1e-6, 
-        lower_bound=0.0,
+        lower_bound=nothing,
         upper_bound=nothing,
         verbose=true,
         raw_outputs=false,
@@ -59,6 +59,10 @@ function least_core(
     # upper_bound is nothing, set it to the benefit of the grand coalition
     if isnothing(upper_bound)
         upper_bound = benefit_grand_coalition
+    end
+    # lower_bound is nothing, set it to the benefit of the grand coalition
+    if isnothing(lower_bound)
+        upper_bound = -benefit_grand_coalition
     end
 
     # initialize JuMP model
@@ -195,7 +199,7 @@ rtol : Number (optional, default 1e-6)
     Relative tolerance of the convergence process
 atol : Number (optional, default 1e-6)
     Absolute tolerance of the convergence process
-lower_bound : Number (optional, default 0.0)
+lower_bound : Number (optional, default nothing)
     Lower bound of the variables of the problem (benefit distribution and margin of the worst coalition)
 upper_bound : Number (optional, default nothing)
     Upper bound of the variables of the problem (benefit distribution and margin of the worst coalition)
@@ -219,7 +223,7 @@ function specific_least_core(
         optimizer;
         rtol=1e-6,
         atol=1e-6, 
-        lower_bound=0.0,
+        lower_bound=nothing,
         upper_bound=nothing,
         verbose=true,
         raw_outputs=false,
@@ -484,7 +488,7 @@ rtol : Number (optional, default 1e-6)
     Relative tolerance of the convergence process
 atol : Number (optional, default 1e-6)
     Absolute tolerance of the convergence process
-lower_bound : Number (optional, default 0.0)
+lower_bound : Number (optional, default nothing)
     Lower bound of the variables of the problem (benefit distribution and margin of the worst coalition)
 upper_bound : Number (optional, default nothing)
     Upper bound of the variables of the problem (benefit distribution and margin of the worst coalition)
@@ -508,7 +512,7 @@ function specific_in_core(
         optimizer;
         rtol=1e-6,
         atol=1e-6, 
-        lower_bound=0.0,
+        lower_bound=nothing,
         upper_bound=nothing,
         verbose=true,
         raw_outputs=false,
@@ -521,6 +525,10 @@ function specific_in_core(
     # benefit of the grand coalition
     benefit_grand_coalition = callback_benefit_by_coalition(player_set)
 
+    # lower_bound is nothing, set it to the benefit of the grand coalition
+    if isnothing(lower_bound)
+        upper_bound = -benefit_grand_coalition
+    end
     # upper_bound is nothing, set it to the benefit of the grand coalition
     if isnothing(upper_bound)
         upper_bound = benefit_grand_coalition
