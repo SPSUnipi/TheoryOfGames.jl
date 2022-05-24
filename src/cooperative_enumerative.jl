@@ -422,7 +422,7 @@ verbose : Bool (optional, default true)
 
 Outputs
 ------
-specific_least_core_dist : Dict
+specific_ref_in_core_dist : Dict
     Dictionary of the fair distributions of the profits among the players
 """
 function ref_in_core(

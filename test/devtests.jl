@@ -13,7 +13,7 @@ include("tests.jl")
 
 
 
-function to_RobustMode(example)
+function to_IterMode(example)
     util_combs = utility_combs(example.player_set, example.utility)
     keys_no_grand_coalition = setdiff(keys(util_combs), [Set(), Set(example.player_set)])
 
@@ -30,7 +30,7 @@ function to_RobustMode(example)
             return least_benefit_coal, util_combs[Set(least_benefit_coal)], min_surplus
         end
 
-        return Games.RobustMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
+        return Games.IterMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
     end
 end
 
@@ -62,7 +62,7 @@ loaded_enum = load("test.jld2", EnumMode())
 
 # a = ref_in_core(mode, ref_dist, optimizer)
 
-# mode_example = to_RobustMode(example)
+mode_example = to_IterMode(example)
 
 # profit_distribution, min_surplus, history = least_core(mode_example, optimizer, raw_outputs=true)
 #[9.249999967500331, 5.500000064999378, 9.24999996750029]

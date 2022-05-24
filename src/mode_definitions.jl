@@ -31,7 +31,7 @@ struct EnumMode <: AbstractCalcMode  # Enumerative technique
 end
 
 """
-    RobustMode is a structure defining the modality for robust-like identification
+    IterMode is a structure defining the modality for interative identification
     of the benefit distribution mechanism
 
 Fields
@@ -45,7 +45,7 @@ callback_worst_coalition : Function
     Callback function that is used to determine what is the coalition with the worst benefit
     and the total benefit of the coalition
 """
-struct RobustMode <: AbstractCalcMode  # Robust-Optimization technique
+struct IterMode <: AbstractCalcMode  # Robust-Optimization technique
     # AbstractVector of the players
     player_set::Union{Set, Vector}
     # Callback function used to obtain the benefit of a coalition
@@ -53,7 +53,7 @@ struct RobustMode <: AbstractCalcMode  # Robust-Optimization technique
     # Callback function used in the iterative approaches
     callback_worst_coalition::Function
 
-    function RobustMode(player_set_::Union{Set, Vector}, callback_benefit_by_coalition_::Function, callback_worst_coalition_::Function)
+    function IterMode(player_set_::Union{Set, Vector}, callback_benefit_by_coalition_::Function, callback_worst_coalition_::Function)
         return new(player_set_, callback_benefit_by_coalition_, callback_worst_coalition_)
     end
 
@@ -66,7 +66,7 @@ struct RobustMode <: AbstractCalcMode  # Robust-Optimization technique
     #     return new(player_set_, utilities_)
     # end
 
-    function RobustMode(::Any, ::Any)
+    function IterMode(::Any, ::Any)
         throw(ArgumentError("Invalid arguments for EnumMode"))
     end
 end

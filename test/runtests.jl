@@ -38,8 +38,8 @@ function test_example(example_name, testing_function, args...; kwargs...)
 
 end
 
-"Function to create RobustMode out of an example"
-function to_RobustMode(example)
+"Function to create IterMode out of an example"
+function to_IterMode(example)
     util_combs = utility_combs(example.player_set, example.utility)
     keys_no_grand_coalition = setdiff(keys(util_combs), [Set(), Set(example.player_set)])
 
@@ -56,7 +56,7 @@ function to_RobustMode(example)
             return least_benefit_coal, util_combs[Set(least_benefit_coal)], min_surplus
         end
 
-        return Games.RobustMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
+        return Games.IterMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
     end
 end
 
@@ -170,7 +170,7 @@ end
         for example in example_list
 
             # obtain output from robust least core
-            result_value = least_core(to_RobustMode(example), OPTIMIZER)
+            result_value = least_core(to_IterMode(example), OPTIMIZER)
 
             # test that the solution belongs to the core
             @test verify_in_core(result_value, to_EnumMode(example), OPTIMIZER) == true
