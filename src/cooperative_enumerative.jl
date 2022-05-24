@@ -19,6 +19,7 @@ shapley_value : Dict
 function shapley_value(
         mode::EnumMode;
         verbose=true,
+        kwargs...
     )
 
     utilities = mode.utilities
@@ -72,7 +73,8 @@ leastcore_dist : Dict
 function least_core(
         mode::EnumMode,
         optimizer;
-        verbose=true
+        verbose=true,
+        kwargs...
     )
 
     utilities = mode.utilities
@@ -141,7 +143,8 @@ function nucleolus(
         mode::EnumMode,
         optimizer;
         verbose=true,
-        tol=1e-5
+        tol=1e-5,
+        kwargs...
     )
 
     utilities = mode.utilities
@@ -282,6 +285,7 @@ function specific_in_core(
         dist_objective::Function,
         optimizer;
         verbose=true,
+        kwargs...
     )
 
     utilities = mode.utilities
@@ -533,6 +537,7 @@ function specific_least_core(
         optimizer; 
         verbose=true,
         raw_outputs=false,
+        kwargs...
     )
 
     utilities = mode.utilities

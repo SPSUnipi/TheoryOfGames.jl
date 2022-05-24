@@ -29,6 +29,9 @@ verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
 raw_outputs : Bool (optional, default false)
     When true, it returns all raw outputs
+use_start_value : Bool (optional, default false)
+    When true, in the iterative process the previous iteration value is used as initialization
+    for the followin iteration
 
 Outputs
 ------
@@ -47,6 +50,7 @@ function least_core(
         upper_bound=nothing,
         verbose=true,
         raw_outputs=false,
+        use_start_value=false,
     )
 
     player_set = mode.player_set
@@ -131,11 +135,22 @@ function least_core(
             worst_coal_set, worst_coal_benefit, lower_problem_min_surplus = callback_worst_coalition(current_profit_dist)
 
             if worst_coal_set != Set(player_set)
+        
+                if use_start_value
+                    # set initial start value
+                    value_start = value.(all_variables(model_dist))
+                end
+
                 # specify that the profit of each subset of the group is better off with the grand coalition
                 con_it = @constraint(
                     model_dist,
                     sum([profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
                 )
+
+
+                if use_start_value
+                    set_start_value.(all_variables(model_dist), value_start)
+                end
             else
                 con_it = nothing
             end
@@ -208,6 +223,9 @@ verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
 raw_outputs : Bool (optional, default false)
     When true, it returns all raw outputs
+use_start_value : Bool (optional, default false)
+    When true, in the iterative process the previous iteration value is used as initialization
+    for the followin iteration
 
 Outputs
 ------
@@ -227,6 +245,7 @@ function specific_least_core(
         upper_bound=nothing,
         verbose=true,
         raw_outputs=false,
+        use_start_value=false,
     )
 
     if verbose
@@ -298,11 +317,22 @@ function specific_least_core(
         else
             # convergence not reached: add new constraint
             if worst_coal_set != Set(player_set)
+
+                if use_start_value
+                    # get start value
+                    value_start = value.(all_variables(model_dist))
+                end
+                
                 # specify that the profit of each subset of the group is better off with the grand coalition
                 con_it = @constraint(
                     model_dist,
                     sum([profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
                 )
+                
+                if use_start_value
+                    # set initial start value
+                    set_start_value.(all_variables(model_dist), value_start)
+                end
                 
                 # optimize current model
                 optimize!(model_dist)
@@ -497,6 +527,9 @@ verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
 raw_outputs : Bool (optional, default false)
     When true, it returns all raw outputs
+use_start_value : Bool (optional, default false)
+    When true, in the iterative process the previous iteration value is used as initialization
+    for the followin iteration
 
 Outputs
 ------
@@ -516,6 +549,7 @@ function specific_in_core(
         upper_bound=nothing,
         verbose=true,
         raw_outputs=false,
+        use_start_value=false,
     )
 
     player_set = mode.player_set
@@ -592,11 +626,22 @@ function specific_in_core(
             # convergence not reached: add new constraint
 
             if worst_coal_set != Set(player_set)
+
+                if use_start_value
+                    # set initial start value
+                    value_start = value.(all_variables(model_dist))
+                end
+
                 # specify that the profit of each subset of the group is better off with the grand coalition
                 con_it = @constraint(
                     model_dist,
                     sum([profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit # + 0.0 # set 0.0 to make it belong to the core
                 )
+
+                if use_start_value
+                    # set start value
+                    set_start_value.(all_variables(model_dist), value_start)
+                end
             end
         end
 
