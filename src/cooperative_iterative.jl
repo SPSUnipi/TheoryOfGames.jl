@@ -79,7 +79,7 @@ function least_core(
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == benefit_grand_coalition)
 
     # the gain of the worst group of the current iteration
-    @variable(model_dist, lower_bound <= min_surplus <= upper_bound)
+    @variable(model_dist, -upper_bound <= min_surplus <= upper_bound)
 
     # specify the objective maximize the benefit or remaining in the coalition
     @objective(model_dist, Max, min_surplus)
@@ -144,7 +144,7 @@ function least_core(
                 # specify that the profit of each subset of the group is better off with the grand coalition
                 con_it = @constraint(
                     model_dist,
-                    sum([profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
+                    sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
                 )
 
 
@@ -326,7 +326,7 @@ function specific_least_core(
                 # specify that the profit of each subset of the group is better off with the grand coalition
                 con_it = @constraint(
                     model_dist,
-                    sum([profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
+                    sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
                 )
                 
                 if use_start_value
@@ -635,7 +635,7 @@ function specific_in_core(
                 # specify that the profit of each subset of the group is better off with the grand coalition
                 con_it = @constraint(
                     model_dist,
-                    sum([profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit # + 0.0 # set 0.0 to make it belong to the core
+                    sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit # + 0.0 # set 0.0 to make it belong to the core
                 )
 
                 if use_start_value
