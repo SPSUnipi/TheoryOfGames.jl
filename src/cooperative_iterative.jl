@@ -577,7 +577,7 @@ function specific_in_core(
         con_it = nothing
 
         # check if convergence has been reached: when the lower problem min surplus is non-negative
-        if lower_problem_min_surplus * (1-rtol) - atol >= 0
+        if lower_problem_min_surplus * (1+rtol) + atol >= 0
             # convergence reached
             continue_while = false
         else
@@ -780,11 +780,18 @@ Outputs
 in_core_dist : Dict
     Dictionary of the fair distributions of the profits among the players
 """
-function verify_in_core(profit_dist, mode::IterMode, optimizer; kwargs...)
+function verify_in_core(
+        profit_dist, 
+        mode::IterMode,
+        optimizer; 
+        rtol=1e-6,
+        atol=1e-6,
+        kwargs...
+    )
     
     
     worst_coal_set, worst_coal_benefit, lower_problem_min_surplus = mode.callback_worst_coalition(profit_dist)
 
     # if return value is nothing, the problem is infeasible, hence the solution does not belong to the core
-    return lower_problem_min_surplus >= 0.0
+    return lower_problem_min_surplus*(1+rtol) + atol >= 0.0
 end

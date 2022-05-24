@@ -67,9 +67,11 @@ enum_mode = Games.EnumMode(example.player_set, example.utility)
 mode_iter = to_IterMode(example)
 mode_enum = to_EnumMode(example)
 
+nucleolus(mode_enum, optimizer)
+
 #specific_least_core_dist_enum, min_surplus_enum, model_dist_enum = var_least_core(mode_enum, optimizer; raw_outputs=true)
-profit_distribution, min_surplus, history, model_dist = in_core(mode_iter, optimizer; raw_outputs=true)
-verify_in_core(profit_distribution, mode_iter, optimizer)
+#profit_distribution, min_surplus, history, model_dist = in_core(mode_iter, optimizer; raw_outputs=true)
+# verify_in_core(profit_distribution, mode_iter, optimizer)
 
 
 # profit_distribution, min_surplus, history = least_core(mode_example, optimizer, raw_outputs=true)

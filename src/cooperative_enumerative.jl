@@ -147,9 +147,6 @@ function nucleolus(
     utilities = mode.utilities
     player_set = mode.player_set
 
-    # total combinations
-    comb_set = combinations(player_set)
-
     # initialize JuMP model
 
     # total combinations
@@ -168,7 +165,7 @@ function nucleolus(
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # specify that the profit of each subset of the group is better off with the grand coalition
-    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0 && length(comb) < length(player_set)],
+    @constraint(model_dist, con_subset_profit[comb in comb_set],
         sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + min_surplus
     )
 

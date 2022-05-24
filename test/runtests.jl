@@ -127,7 +127,7 @@ example_list = [
     @testset "var_core" begin
         println("TEST SET - VAR CORE")
         for example in example_list
-            test_example("ENUM_" * example.name, var_core, to_EnumMode(example), OPTIMIZER)
+            test_example("ALL_" * example.name, var_core, to_EnumMode(example), OPTIMIZER)
         end
     end
 
@@ -138,14 +138,14 @@ example_list = [
             ref_dist = Dict(
                 zip(example.player_set, fill(0.0, length(example.player_set)))
             )
-            test_example("ENUM_" * example.name, ref_in_core, to_EnumMode(example), ref_dist, OPTIMIZER)
+            test_example("ALL_" * example.name, ref_in_core, to_EnumMode(example), ref_dist, OPTIMIZER)
         end
     end
 
     @testset "var_least_core" begin
         println("TEST SET - VAR LEAST CORE")
         for example in example_list
-            test_example("ENUM_" * example.name, var_least_core, to_EnumMode(example), OPTIMIZER)
+            test_example("ALL_" * example.name, var_least_core, to_EnumMode(example), OPTIMIZER)
         end
     end
 
@@ -156,7 +156,7 @@ example_list = [
             ref_dist = Dict(
                 zip(example.player_set, fill(0.0, length(example.player_set)))
             )
-            test_example("ENUM_" * example.name, ref_least_core, to_EnumMode(example), ref_dist, OPTIMIZER)
+            test_example("ALL_" * example.name, ref_least_core, to_EnumMode(example), ref_dist, OPTIMIZER)
         end
     end
 
@@ -179,7 +179,7 @@ end
     @testset "var_least_core" begin
         println("TEST SET - VAR LEAST CORE")
         for example in example_list
-            test_example("ITER_" * example.name, var_least_core, to_IterMode(example), OPTIMIZER)
+            test_example("ALL_" * example.name, var_least_core, to_IterMode(example), OPTIMIZER)
         end
     end
 
@@ -190,7 +190,7 @@ end
             ref_dist = Dict(
                 zip(example.player_set, fill(0.0, length(example.player_set)))
             )
-            test_example("ITER_" * example.name, ref_least_core, to_IterMode(example), ref_dist, OPTIMIZER)
+            test_example("ALL_" * example.name, ref_least_core, to_IterMode(example), ref_dist, OPTIMIZER)
         end
     end
 
@@ -227,7 +227,7 @@ end
     @testset "var_core" begin
         println("TEST SET - VAR CORE")
         for example in example_list
-            test_example("ITER_" * example.name, var_core, to_IterMode(example), OPTIMIZER)
+            test_example("ALL_" * example.name, var_core, to_IterMode(example), OPTIMIZER)
         end
     end
 
@@ -238,7 +238,7 @@ end
             ref_dist = Dict(
                 zip(example.player_set, fill(0.0, length(example.player_set)))
             )
-            test_example("ITER_" * example.name, ref_in_core, to_IterMode(example), ref_dist, OPTIMIZER)
+            test_example("ALL_" * example.name, ref_in_core, to_IterMode(example), ref_dist, OPTIMIZER)
         end
     end
 
