@@ -12,6 +12,8 @@ using JLD2
 include("tests.jl")
 
 
+"Function to create EnumMode out of an example"
+to_EnumMode(example) = EnumMode(example.player_set, example.utility)
 
 function to_IterMode(example)
     util_combs = utility_combs(example.player_set, example.utility)
@@ -37,16 +39,16 @@ end
 optimizer = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0)
 # optimizer = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0)  #, "tol"=>1e-4)  #, "NonConvex"=>2)
 
-example = Examples.three_users_atleasttwo_string
+example = Examples.three_users_mapping
 
 player_set = example.player_set
 utility = example.utility
 
 enum_mode = Games.EnumMode(example.player_set, example.utility)
 
-save("test.jld2", enum_mode)
+# save("test.jld2", enum_mode)
 
-loaded_enum = load("test.jld2", EnumMode())
+# loaded_enum = load("test.jld2", EnumMode())
 
 # val_enum = in_core(enum_mode, optimizer)
 
@@ -62,7 +64,13 @@ loaded_enum = load("test.jld2", EnumMode())
 
 # a = ref_in_core(mode, ref_dist, optimizer)
 
-mode_example = to_IterMode(example)
+mode_iter = to_IterMode(example)
+mode_enum = to_EnumMode(example)
+
+#specific_least_core_dist_enum, min_surplus_enum, model_dist_enum = var_least_core(mode_enum, optimizer; raw_outputs=true)
+profit_distribution, min_surplus, history, model_dist = in_core(mode_iter, optimizer; raw_outputs=true)
+verify_in_core(profit_distribution, mode_iter, optimizer)
+
 
 # profit_distribution, min_surplus, history = least_core(mode_example, optimizer, raw_outputs=true)
 #[9.249999967500331, 5.500000064999378, 9.24999996750029]

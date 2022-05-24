@@ -94,10 +94,10 @@ function least_core(
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # the gain of the worst group of the current iteration
-    @variable(model_dist, minimum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
+    @variable(model_dist, -maximum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
 
     # specify that the profit of each subset of the group is better off with the grand coalition
-    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
+    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0 && length(comb) < length(player_set)],
         sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + min_surplus
     )
 
@@ -162,13 +162,13 @@ function nucleolus(
     @variable(model_dist, minimum(values(utilities)) <= profit_dist[pl in player_set] <= maximum(values(utilities)))
 
     # the gain of the worst group of each iteration
-    @variable(model_dist, minimum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
+    @variable(model_dist, -maximum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
 
     # specify that the total profit distribution cannot exceed the total benefit
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # specify that the profit of each subset of the group is better off with the grand coalition
-    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
+    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0 && length(comb) < length(player_set)],
         sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + min_surplus
     )
 
@@ -302,7 +302,7 @@ function specific_in_core(
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # specify that the profit of each subset of the group is better off with the grand coalition
-    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
+    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0 && length(comb) < length(player_set)],
         sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + 0.0 # the 0.0 is to remind 
                                             # that min_surplus shall be zero to belong to the core
     )
@@ -352,7 +352,7 @@ function in_core(mode::EnumMode, optimizer; kwargs...)
     return specific_in_core(
         mode,
         in_core_objective,  # the core is only a feasibility problem, thus specify constant obj. funciton
-        optimizer,
+        optimizer;
         kwargs...
     )
 end
@@ -535,6 +535,7 @@ function specific_least_core(
         dist_objective::Function,
         optimizer; 
         verbose=true,
+        raw_outputs=false,
     )
 
     utilities = mode.utilities
@@ -552,10 +553,10 @@ function specific_least_core(
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # the gain of the worst group of the current iteration
-    @variable(model_dist, minimum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
+    @variable(model_dist, -maximum(values(utilities)) <= min_surplus <= maximum(values(utilities)))
 
     # specify that the profit of each subset of the group is better off with the grand coalition
-    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0],
+    @constraint(model_dist, con_subset_profit[comb in comb_set; length(comb) > 0 && length(comb) < length(player_set)],
         sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + min_surplus
     )
 
@@ -565,8 +566,10 @@ function specific_least_core(
     # optimize and get the value of min_surplus
     optimize!(model_dist)
 
+    value_min_surplus = value(min_surplus)
+
     # fix the value of min_surplus
-    fix(min_surplus, value(min_surplus), force=true)
+    fix(min_surplus, value_min_surplus, force=true)
 
     # Update objective function according to the desired dist_objective function
     dist_objective(model_dist, player_set)
@@ -576,7 +579,11 @@ function specific_least_core(
 
     specific_least_core_dist = Dict(zip(player_set, value.(profit_dist).data))
 
-    return specific_least_core_dist
+    if raw_outputs
+        return specific_least_core_dist, value_min_surplus, model_dist
+    else
+        return specific_least_core_dist
+    end
 end
 
 

@@ -71,8 +71,7 @@ example_list = [
 ]
 
 
-@testset "Game tests - Enumeration" begin
-
+@testset "Game tests - EnumMode" begin
 
     @testset "shapley" begin
         println("TEST SET - SHAPLEY")
@@ -132,6 +131,17 @@ example_list = [
         end
     end
 
+    @testset "ref_in_core" begin
+        println("TEST SET - REF IN CORE")
+        for example in example_list
+            # reference distribution
+            ref_dist = Dict(
+                zip(example.player_set, fill(0.0, length(example.player_set)))
+            )
+            test_example("ENUM_" * example.name, ref_in_core, to_EnumMode(example), ref_dist, OPTIMIZER)
+        end
+    end
+
     @testset "var_least_core" begin
         println("TEST SET - VAR LEAST CORE")
         for example in example_list
@@ -150,22 +160,11 @@ example_list = [
         end
     end
 
-    @testset "ref_in_core" begin
-        println("TEST SET - REF IN CORE")
-        for example in example_list
-            # reference distribution
-            ref_dist = Dict(
-                zip(example.player_set, fill(0.0, length(example.player_set)))
-            )
-            test_example("ENUM_" * example.name, ref_in_core, to_EnumMode(example), ref_dist, OPTIMIZER)
-        end
-    end
-
 end
 
-@testset "Games tests - Robust" begin
+@testset "Games tests - IterMode" begin
     
-    @testset "robust_least_core" begin
+    @testset "least_core" begin
         println("TEST SET - ROBUST LEAST CORE")
         for example in example_list
 
@@ -174,6 +173,72 @@ end
 
             # test that the solution belongs to the core
             @test verify_in_core(result_value, to_EnumMode(example), OPTIMIZER) == true
+        end
+    end
+
+    @testset "var_least_core" begin
+        println("TEST SET - VAR LEAST CORE")
+        for example in example_list
+            test_example("ITER_" * example.name, var_least_core, to_IterMode(example), OPTIMIZER)
+        end
+    end
+
+    @testset "ref_least_core" begin
+        println("TEST SET - REF LEAST CORE")
+        for example in example_list
+            # reference distribution
+            ref_dist = Dict(
+                zip(example.player_set, fill(0.0, length(example.player_set)))
+            )
+            test_example("ITER_" * example.name, ref_least_core, to_IterMode(example), ref_dist, OPTIMIZER)
+        end
+    end
+
+    @testset "in_core" begin
+        println("TEST SET - IN CORE")
+        for example in example_list
+            test_example("ITER_" * example.name, in_core, to_IterMode(example), OPTIMIZER)
+        end
+    end
+
+    @testset "verify_in_core" begin
+        println("TEST SET - VERIFY IN CORE")
+        for example in example_list
+
+            player_set = example.player_set
+            example_mode = to_IterMode(example)
+
+            # obtain an in-core solution
+            val_dist = in_core(example_mode, OPTIMIZER)
+
+            # test that the in-core solution is actually recognized in the core
+            @test verify_in_core(val_dist, example_mode, OPTIMIZER) == true
+
+            # create an artificial solution likely not to be in the core
+            equal_vals = JuMP.Containers.DenseAxisArray(
+                fill(sum(values(val_dist))/length(player_set), length(player_set)), player_set
+            )
+
+            # test that the artificial distribution does not belong to the core
+            @test verify_in_core(equal_vals, example_mode, OPTIMIZER) == false
+        end
+    end
+
+    @testset "var_core" begin
+        println("TEST SET - VAR CORE")
+        for example in example_list
+            test_example("ITER_" * example.name, var_core, to_IterMode(example), OPTIMIZER)
+        end
+    end
+
+    @testset "ref_in_core" begin
+        println("TEST SET - REF IN CORE")
+        for example in example_list
+            # reference distribution
+            ref_dist = Dict(
+                zip(example.player_set, fill(0.0, length(example.player_set)))
+            )
+            test_example("ITER_" * example.name, ref_in_core, to_IterMode(example), ref_dist, OPTIMIZER)
         end
     end
 
