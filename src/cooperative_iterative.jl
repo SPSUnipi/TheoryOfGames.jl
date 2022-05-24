@@ -54,7 +54,7 @@ function least_core(
     callback_benefit_by_coalition = mode.callback_benefit_by_coalition
 
     # benefit of the grand coalition
-    benefit_grand_coalition = callback_benefit_by_coalition(player_set)
+    benefit_grand_coalition = callback_benefit_by_coalition([EC_CODE; player_set])
 
     # upper_bound is nothing, set it to the benefit of the grand coalition
     if isnothing(upper_bound)
@@ -523,7 +523,7 @@ function specific_in_core(
     callback_benefit_by_coalition = mode.callback_benefit_by_coalition
 
     # benefit of the grand coalition
-    benefit_grand_coalition = callback_benefit_by_coalition(player_set)
+    benefit_grand_coalition = callback_benefit_by_coalition([EC_CODE; player_set])
 
     # lower_bound is nothing, set it to the benefit of the grand coalition
     if isnothing(lower_bound)
