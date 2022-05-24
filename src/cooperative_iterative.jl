@@ -62,7 +62,7 @@ function least_core(
     end
     # lower_bound is nothing, set it to the benefit of the grand coalition
     if isnothing(lower_bound)
-        upper_bound = -benefit_grand_coalition
+        lower_bound = -benefit_grand_coalition
     end
 
     # initialize JuMP model
@@ -527,7 +527,7 @@ function specific_in_core(
 
     # lower_bound is nothing, set it to the benefit of the grand coalition
     if isnothing(lower_bound)
-        upper_bound = -benefit_grand_coalition
+        lower_bound = -benefit_grand_coalition
     end
     # upper_bound is nothing, set it to the benefit of the grand coalition
     if isnothing(upper_bound)
