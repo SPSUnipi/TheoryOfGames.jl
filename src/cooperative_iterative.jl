@@ -96,13 +96,14 @@ function least_core(
     # initialization while condition
     continue_while = true
     iter = 0
+    value_min_surplus = nothing
 
     # visited coalitions
     visited_coalitions = [Set(player_set), Set([])]
 
     # printing formats
     format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
-    format_print_iter = "{:<15s} {:< 13.2e} {:< 13.2e} {:< 13.2f} {:<s}"  # for the iterations
+    format_print_iter = "{:<15s} {:< 15.2e} {:< 15.2e} {:< 15.2f} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
@@ -189,10 +190,9 @@ function least_core(
 
     # result of the profit distribution
     profit_distribution = Dict(zip(player_set, value.(profit_dist).data))
-    min_surplus = value(min_surplus)
 
     if raw_outputs
-        return profit_distribution, min_surplus, history, model_dist
+        return profit_distribution, value_min_surplus, history, model_dist
     else
         return profit_distribution
     end
@@ -301,7 +301,7 @@ function specific_least_core(
 
     # printing formats
     format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
-    format_print_iter = "{:<15s} {:< 13.2e} {:< 13.2e} {:< 13.2f} {:<s}"  # for the iterations
+    format_print_iter = "{:<15s} {:< 15.2e} {:< 15.2e} {:< 15.2f} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
@@ -616,7 +616,7 @@ function specific_in_core(
 
     # printing formats
     format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
-    format_print_iter = "{:<15s} {:< 13.2e} {:< 13.2e} {:< 13.2f} {:<s}"  # for the iterations
+    format_print_iter = "{:<15s} {:< 15.2e} {:< 15.2e} {:< 15.2f} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
