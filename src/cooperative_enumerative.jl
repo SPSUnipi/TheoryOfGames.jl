@@ -49,7 +49,7 @@ end
 
 
 """
-    least_core(mode, utilities, optimizer; verbose)
+    least_core(mode, utilities, optimizer; verbose, raw_outputs)
 
 Function to calculte the least core profit distribution for a game described by the utility function
 and the grand coalition of player_set.
@@ -124,7 +124,7 @@ end
 
 
 """
-    nucleolus(mode, utilities; verbose, tol)
+    nucleolus(mode, utilities; verbose, tol, raw_outputs)
 
 Function to calculte the nucleolus profit distribution for a game described by the utility function
 and the grand coalition of player_set.
@@ -153,6 +153,7 @@ function nucleolus(
         optimizer;
         verbose=true,
         tol=1e-5,
+        raw_outputs=false,
         kwargs...
     )
 
@@ -268,7 +269,7 @@ end
 
 
 """
-    specific_in_core(mode, dist_objective, optimizer; verbose)
+    specific_in_core(mode, dist_objective, optimizer; verbose, raw_outputs)
 
 Function to calculte a stable profit distribution that belongs to the core
 and maximizes a specific distribution objective specified by dist_objective
@@ -345,7 +346,7 @@ end
 
 
 """
-    in_core(mode, optimizer; verbose, utilities)
+    in_core(mode, optimizer; verbose, raw_outputs)
 
 Function to calculte a stable profit distribution that belongs to the core
 for profit distribution for a game described by the utility function
@@ -524,7 +525,7 @@ end
 
 
 """
-    specific_least_core(mode, dist_objective, optimizer; verbose)
+    specific_least_core(mode, dist_objective, optimizer; verbose, raw_outputs)
 
 Function to calculte a stable profit distribution that belongs to the least core
 and minimizes a specific objective for the profit allocation among the plauers,
