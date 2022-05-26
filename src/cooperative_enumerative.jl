@@ -74,6 +74,7 @@ function least_core(
         mode::EnumMode,
         optimizer;
         verbose=true,
+        raw_outputs=false,
         kwargs...
     )
 
@@ -111,7 +112,11 @@ function least_core(
 
     lc_dist = Dict(zip(player_set, value.(profit_dist).data))
 
-    return lc_dist
+    if raw_outputs
+        return lc_dist, value(min_surplus), model_dist
+    else
+        return lc_dist
+    end
 end
 
 
@@ -360,7 +365,7 @@ end
 
 
 """
-    var_core(mode, optimizer; verbose)
+    var_in_core(mode, optimizer; verbose)
 
 Function to calculte a stable profit distribution that belongs to the core
 and minimizes the variance of the profit allocation among the plauers
@@ -380,7 +385,7 @@ Outputs
 var_core : Dict
     Dictionary of the fair distributions of the profits among the players
 """
-function var_core(mode::EnumMode, optimizer; kwargs...)
+function var_in_core(mode::EnumMode, optimizer; kwargs...)
 
     # create the objective function for the problem
     function var_objective(m, player_set)

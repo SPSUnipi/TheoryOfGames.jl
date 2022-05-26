@@ -127,7 +127,7 @@ example_list = [
     @testset "var_core" begin
         println("TEST SET - VAR CORE")
         for example in example_list
-            test_example("ALL_" * example.name, var_core, to_EnumMode(example), OPTIMIZER)
+            test_example("ALL_" * example.name, var_in_core, to_EnumMode(example), OPTIMIZER)
         end
     end
 
@@ -227,7 +227,7 @@ end
     @testset "var_core" begin
         println("TEST SET - VAR CORE")
         for example in example_list
-            test_example("ALL_" * example.name, var_core, to_IterMode(example), OPTIMIZER; atol=ATOL_TEST)
+            test_example("ALL_" * example.name, var_in_core, to_IterMode(example), OPTIMIZER; atol=ATOL_TEST)
         end
     end
 
