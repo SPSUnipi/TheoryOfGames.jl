@@ -43,7 +43,11 @@ callback_benefit_by_coalition : Function
     and the total benefit of the coalition
 callback_worst_coalition : Function
     Callback function that is used to determine what is the coalition with the worst benefit
-    and the total benefit of the coalition
+    and the total benefit of the coalition.
+    The function shall return a Vector of NamedTuple, where for every entry o shall contain:
+    - least_profitable_coalition: members of the worst coalition, for result o
+    - coalition_benefit: benefit of the coalition, for result o
+    - min_surplus: minimum surplus of the coalition, for result o
 """
 struct IterMode <: AbstractCalcMode  # Robust-Optimization technique
     # AbstractVector of the players

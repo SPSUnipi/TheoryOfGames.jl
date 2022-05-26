@@ -32,6 +32,8 @@ raw_outputs : Bool (optional, default false)
 use_start_value : Bool (optional, default false)
     When true, in the iterative process the previous iteration value is used as initialization
     for the followin iteration
+max_iter : Bool (optional, default 100)
+    Maximum number of iterations of the process
 
 Outputs
 ------
@@ -51,6 +53,7 @@ function least_core(
         verbose=true,
         raw_outputs=false,
         use_start_value=false,
+        max_iter=100,
     )
 
     player_set = mode.player_set
@@ -93,18 +96,21 @@ function least_core(
     # initialization while condition
     continue_while = true
     iter = 0
-    added_coalition = "Init"
+
+    # visited coalitions
+    visited_coalitions = [Set(player_set), Set([])]
 
     # printing formats
     format_print_head = "{:<15s} {:^15s} {:^15s} {:^15s} {:<s}"  # for the header
-    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2e} {:<s}"  # for the iterations
+    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2f} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
-        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tolerance", "Added coalition : benefit allocation")
+        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tol. [%]", "Benefit distribution")
     end
 
-    while continue_while
+    
+    while continue_while && iter <= max_iter
 
         # update counter
         iter += 1
@@ -114,11 +120,17 @@ function least_core(
 
         value_min_surplus = value(min_surplus)
 
-        # if verbose print log
-        if verbose
-            rel_tol = compute_relative_tol(lower_problem_min_surplus, value_min_surplus)
-            printfmtln(format_print_iter, iter, lower_problem_min_surplus, value_min_surplus, rel_tol, added_coalition)
-        end
+        # get current profit distribution
+        current_profit_dist = value.(profit_dist)
+
+        # get a vector in which each row contains a named tuple with:
+        # (1) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
+        # (2) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
+        # (3) the minimum surplus of that coalition [min_surplus]
+        output_data = callback_worst_coalition(current_profit_dist)
+
+        # get the minimum surplus of the iteration
+        lower_problem_min_surplus = output_data[1].min_surplus
 
         # check if convergence has been reached
         if isapprox(value_min_surplus, lower_problem_min_surplus, rtol=rtol, atol=atol, norm=abs)
@@ -127,49 +139,49 @@ function least_core(
         else
             # convergence not reached: add new constraint
 
-            current_profit_dist = value.(profit_dist)
-
-            # get (1) the coalition (worst_coal_set) with the least benefit,
-            # (2) the total benefit of that coalition (worst_coal_benefit), and
-            # (3) the minimum surplus of that coalition
-            worst_coal_set, worst_coal_benefit, lower_problem_min_surplus = callback_worst_coalition(current_profit_dist)
-
-            if worst_coal_set != Set(player_set)
-        
-                if use_start_value
-                    # set initial start value
-                    value_start = value.(all_variables(model_dist))
-                end
-
-                # specify that the profit of each subset of the group is better off with the grand coalition
-                con_it = @constraint(
-                    model_dist,
-                    sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
-                )
-
-
-                if use_start_value
-                    set_start_value.(all_variables(model_dist), value_start)
-                end
-            else
-                con_it = nothing
+            if use_start_value
+                # set initial start value
+                value_start = value.(all_variables(model_dist))
             end
 
-            # data of the iteration
-            iter_data = (
-                current_profit=current_profit_dist,
-                worst_coal=worst_coal_set,
-                benefit_coal=worst_coal_benefit,
-                value_min_surplus=value_min_surplus,
-                lower_problem_min_surplus=lower_problem_min_surplus,
-                constraint=con_it,
-            )
+            for row in output_data
 
-            # update coalition
-            added_coalition = string(worst_coal_set) * ": " * string(current_profit_dist.data)
+                if row.least_profitable_coalition ∉ visited_coalitions
 
-            # add the iteration to the history
-            push!(history, iter_data)
+                    # update visited_coalitions
+                    push!(visited_coalitions, row.least_profitable_coalition)
+
+                    # specify that the profit of each subset of the group is better off with the grand coalition
+                    con_it = @constraint(
+                        model_dist,
+                        sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in row.least_profitable_coalition]) >= row.coalition_benefit + min_surplus
+                    )
+
+                    # data of the iteration
+                    iter_data = (
+                        iteration=iter,
+                        current_profit=current_profit_dist,
+                        worst_coal=row.least_profitable_coalition,
+                        benefit_coal=row.coalition_benefit,
+                        value_min_surplus=value_min_surplus,
+                        lower_problem_min_surplus=lower_problem_min_surplus,
+                        constraint=con_it,
+                    )
+            
+                    # add the iteration to the history
+                    push!(history, iter_data)
+                end
+            end
+
+
+            # if verbose print log
+            if verbose
+                # update coalition
+                benefit_distribution = string(current_profit_dist.data)
+
+                rel_tol = compute_relative_tol(lower_problem_min_surplus, value_min_surplus)
+                printfmtln(format_print_iter, iter, value_min_surplus, lower_problem_min_surplus, rel_tol, benefit_distribution)
+            end
         end
     end
 
@@ -281,92 +293,96 @@ function specific_least_core(
     # initialization while condition
     continue_while = true
     iter = 0
-    added_coalition = "Init"
+
+    # visited coalitions
+    visited_coalitions = [Set(player_set), Set([])]
 
     # printing formats
     format_print_head = "{:<15s} {:^15s} {:^15s} {:^15s} {:<s}"  # for the header
-    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2e} {:<s}"  # for the iterations
+    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2f} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
-        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tolerance", "Added coalition : benefit allocation")
+        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tol. [%]", "Benefit distribution")
     end
 
-    # optimize current model with updated objective
-    optimize!(model_dist)
-    
-    # initialize profit_distribution
-    current_profit_dist = value.(model_dist[:profit_dist])
+    # initialize variable
+    current_profit_dist = nothing
 
     while continue_while && iter <= max_iter
 
         # update counter
         iter += 1
 
-        # get (1) the coalition (worst_coal_set) with the least benefit,
-        # (2) the total benefit of that coalition (worst_coal_benefit), and
-        # (3) the minimum surplus of that coalition
-        worst_coal_set, worst_coal_benefit, lower_problem_min_surplus = callback_worst_coalition(current_profit_dist)
-        
-        con_it = nothing
+        # optimize current model
+        optimize!(model_dist)
+
+        # get current profit distribution
+        current_profit_dist = value.(model_dist[:profit_dist])
+
+        # get a vector in which each row contains a named tuple with:
+        # (1) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
+        # (2) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
+        # (3) the minimum surplus of that coalition [min_surplus]
+        output_data = callback_worst_coalition(current_profit_dist)
+
+        # get the minimum surplus of the iteration
+        lower_problem_min_surplus = output_data[1].min_surplus
 
         # check if convergence has been reached
         if isapprox(lower_problem_min_surplus, min_surplus, rtol=rtol, atol=atol, norm=abs)
             # convergence reached
             continue_while = false
         else
-            # convergence not reached: add new constraint
-            if worst_coal_set != Set(player_set)
 
-                if use_start_value
-                    # get start value
-                    value_start = value.(all_variables(model_dist))
-                end
-                
-                # specify that the profit of each subset of the group is better off with the grand coalition
-                con_it = @constraint(
-                    model_dist,
-                    sum(GenericAffExpr{Float64,VariableRef}[model_dist[:profit_dist][pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
-                )
-                
-                if use_start_value
-                    # set initial start value
-                    set_start_value.(all_variables(model_dist), value_start)
-                end
-                
-                # optimize current model
-                optimize!(model_dist)
+            if use_start_value
+                # set initial start value
+                value_start = value.(all_variables(model_dist))
+            end
 
-                # update current profit distribution
-                current_profit_dist = value.(model_dist[:profit_dist])
-                
-                # update coalition
-                added_coalition = string(worst_coal_set) * ": " * string(current_profit_dist.data)
-            else
-                # update coalition
-                added_coalition = "None"
+            for row in output_data
+
+                if row.least_profitable_coalition ∉ visited_coalitions
+
+                    # update visited_coalitions
+                    push!(visited_coalitions, row.least_profitable_coalition)
+
+                    # specify that the profit of each subset of the group is better off with the grand coalition
+                    con_it = @constraint(
+                        model_dist,
+                        sum(GenericAffExpr{Float64,VariableRef}[model_dist[:profit_dist][pl] for pl in row.least_profitable_coalition]) >= row.coalition_benefit + min_surplus
+                    )
+
+                    # data of the iteration
+                    iter_data = (
+                        iteration=iter,
+                        current_profit=current_profit_dist,
+                        worst_coal=row.least_profitable_coalition,
+                        benefit_coal=row.coalition_benefit,
+                        value_min_surplus=min_surplus,
+                        lower_problem_min_surplus=lower_problem_min_surplus,
+                        constraint=con_it,
+                    )
+            
+                    # add the iteration to the history
+                    push!(history, iter_data)
+                end
+            end
+
+            if use_start_value
+                # set start value
+                set_start_value.(all_variables(model_dist), value_start)
             end
         end
-        
-
-        # data of the iteration
-        iter_data = (
-            current_profit=current_profit_dist,
-            worst_coal=worst_coal_set,
-            benefit_coal=worst_coal_benefit,
-            value_min_surplus=min_surplus,
-            lower_problem_min_surplus=lower_problem_min_surplus,
-            constraint=con_it,
-        )
 
         # if verbose print log
         if verbose
-            rel_tol = compute_relative_tol(lower_problem_min_surplus, min_surplus)
-            printfmtln(format_print_iter, iter, min_surplus, lower_problem_min_surplus, rel_tol, added_coalition)
-        end
+            # update coalition
+            benefit_distribution = string(current_profit_dist.data)
 
-        # add the iteration to the history
-        push!(history, iter_data)
+            rel_tol = compute_relative_tol(lower_problem_min_surplus, min_surplus)
+            printfmtln(format_print_iter, iter, min_surplus, lower_problem_min_surplus, rel_tol, benefit_distribution)
+        end
     end
 
     # result of the profit distribution
@@ -592,15 +608,15 @@ function specific_in_core(
     # initialization while condition
     continue_while = true
     iter = 0
-    added_coalition = "Init"
+    visited_coalitions = [Set(player_set), Set([])]
 
     # printing formats
     format_print_head = "{:<15s} {:^15s} {:^15s} {:^15s} {:<s}"  # for the header
-    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2e} {:<s}"  # for the iterations
+    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2f} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
-        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tolerance", "Added coalition : benefit allocation")
+        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tol. [%]", "Benefit allocation")
     end
 
     while continue_while && iter <= max_iter
@@ -613,13 +629,14 @@ function specific_in_core(
 
         # get current profit distribution
         current_profit_dist = value.(profit_dist)
-        # get (1) the coalition (worst_coal_set) with the least benefit,
-        # (2) the total benefit of that coalition (worst_coal_benefit), and
-        # (3) the minimum surplus of that coalition
-        worst_coal_set, worst_coal_benefit, lower_problem_min_surplus = callback_worst_coalition(current_profit_dist)
-        
-        # initialize constraint to add
-        con_it = nothing
+        # get a vector in which each row contains a named tuple with:
+        # (1) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
+        # (2) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
+        # (3) the minimum surplus of that coalition [min_surplus]
+        output_data = callback_worst_coalition(current_profit_dist)
+
+        # get the minimum surplus of the iteration
+        lower_problem_min_surplus = output_data[1].min_surplus
 
         # check if convergence has been reached: when the lower problem min surplus is non-negative
         if lower_problem_min_surplus * (1+rtol) + atol >= 0
@@ -628,47 +645,54 @@ function specific_in_core(
         else
             # convergence not reached: add new constraint
 
-            if worst_coal_set != Set(player_set)
+            if use_start_value
+                # set initial start value
+                value_start = value.(all_variables(model_dist))
+            end
 
-                if use_start_value
-                    # set initial start value
-                    value_start = value.(all_variables(model_dist))
+            for row in output_data
+
+                if row.least_profitable_coalition ∉ visited_coalitions
+
+                    # update visited_coalitions
+                    push!(visited_coalitions, row.least_profitable_coalition)
+
+                    # specify that the profit of each subset of the group is better off with the grand coalition
+                    con_it = @constraint(
+                        model_dist,
+                        sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in row.least_profitable_coalition]) >= row.coalition_benefit # + 0.0 # set 0.0 to make it belong to the core
+                    )
+
+                    # data of the iteration
+                    iter_data = (
+                        iteration=iter,
+                        current_profit=current_profit_dist,
+                        worst_coal=row.least_profitable_coalition,
+                        benefit_coal=row.coalition_benefit,
+                        value_min_surplus=0.0,
+                        lower_problem_min_surplus=lower_problem_min_surplus,
+                        constraint=con_it,
+                    )
+            
+                    # add the iteration to the history
+                    push!(history, iter_data)
                 end
+            end
 
-                # specify that the profit of each subset of the group is better off with the grand coalition
-                con_it = @constraint(
-                    model_dist,
-                    sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit # + 0.0 # set 0.0 to make it belong to the core
-                )
-
-                if use_start_value
-                    # set start value
-                    set_start_value.(all_variables(model_dist), value_start)
-                end
+            if use_start_value
+                # set start value
+                set_start_value.(all_variables(model_dist), value_start)
             end
         end
 
-        # data of the iteration
-        iter_data = (
-            current_profit=current_profit_dist,
-            worst_coal=worst_coal_set,
-            benefit_coal=worst_coal_benefit,
-            value_min_surplus=0.0,
-            lower_problem_min_surplus=lower_problem_min_surplus,
-            constraint=con_it,
-        )
-
-        # update coalition
-        added_coalition = string(worst_coal_set) * ": " * string(current_profit_dist.data)
-
         # if verbose print log
         if verbose
-            rel_tol = compute_relative_tol(lower_problem_min_surplus, 0.0)
-            printfmtln(format_print_iter, iter, lower_problem_min_surplus, 0.0, rel_tol, added_coalition)
-        end
+            # update coalition
+            benefit_distribution = string(current_profit_dist.data)
 
-        # add the iteration to the history
-        push!(history, iter_data)
+            rel_tol = compute_relative_tol(lower_problem_min_surplus, 0.0)
+            printfmtln(format_print_iter, iter, lower_problem_min_surplus, 0.0, rel_tol*100, benefit_distribution)
+        end
     end
 
     # result of the profit distribution
@@ -846,7 +870,9 @@ function verify_in_core(
     )
     
     
-    worst_coal_set, worst_coal_benefit, lower_problem_min_surplus = mode.callback_worst_coalition(profit_dist)
+    out_data = mode.callback_worst_coalition(profit_dist)
+
+    lower_problem_min_surplus = out_data[1].min_surplus
 
     # if return value is nothing, the problem is infeasible, hence the solution does not belong to the core
     return lower_problem_min_surplus*(1+rtol) + atol >= 0.0
