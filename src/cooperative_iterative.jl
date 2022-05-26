@@ -146,22 +146,24 @@ function least_core(
 
             for row in output_data
 
-                if row.least_profitable_coalition ∉ visited_coalitions
+                least_profitable_coalition = Set(row.least_profitable_coalition)
+
+                if least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
-                    push!(visited_coalitions, row.least_profitable_coalition)
+                    push!(visited_coalitions, least_profitable_coalition)
 
                     # specify that the profit of each subset of the group is better off with the grand coalition
                     con_it = @constraint(
                         model_dist,
-                        sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in row.least_profitable_coalition]) >= row.coalition_benefit + min_surplus
+                        sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in least_profitable_coalition]) >= row.coalition_benefit + min_surplus
                     )
 
                     # data of the iteration
                     iter_data = (
                         iteration=iter,
                         current_profit=current_profit_dist,
-                        worst_coal=row.least_profitable_coalition,
+                        worst_coal=least_profitable_coalition,
                         benefit_coal=row.coalition_benefit,
                         value_min_surplus=value_min_surplus,
                         lower_problem_min_surplus=lower_problem_min_surplus,
@@ -342,22 +344,24 @@ function specific_least_core(
 
             for row in output_data
 
-                if row.least_profitable_coalition ∉ visited_coalitions
+                least_profitable_coalition = Set(row.least_profitable_coalition)
+
+                if least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
-                    push!(visited_coalitions, row.least_profitable_coalition)
+                    push!(visited_coalitions, least_profitable_coalition)
 
                     # specify that the profit of each subset of the group is better off with the grand coalition
                     con_it = @constraint(
                         model_dist,
-                        sum(GenericAffExpr{Float64,VariableRef}[model_dist[:profit_dist][pl] for pl in row.least_profitable_coalition]) >= row.coalition_benefit + min_surplus
+                        sum(GenericAffExpr{Float64,VariableRef}[model_dist[:profit_dist][pl] for pl in least_profitable_coalition]) >= row.coalition_benefit + min_surplus
                     )
 
                     # data of the iteration
                     iter_data = (
                         iteration=iter,
                         current_profit=current_profit_dist,
-                        worst_coal=row.least_profitable_coalition,
+                        worst_coal=least_profitable_coalition,
                         benefit_coal=row.coalition_benefit,
                         value_min_surplus=min_surplus,
                         lower_problem_min_surplus=lower_problem_min_surplus,
