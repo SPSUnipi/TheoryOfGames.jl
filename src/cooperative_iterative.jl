@@ -101,8 +101,8 @@ function least_core(
     visited_coalitions = [Set(player_set), Set([])]
 
     # printing formats
-    format_print_head = "{:<15s} {:^15s} {:^15s} {:^15s} {:<s}"  # for the header
-    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2f} {:<s}"  # for the iterations
+    format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
+    format_print_iter = "{:<15s} {:< 13.2e} {:< 13.2e} {:< 13.2f} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
@@ -182,7 +182,7 @@ function least_core(
                 benefit_distribution = string(current_profit_dist.data)
 
                 rel_tol = compute_relative_tol(lower_problem_min_surplus, value_min_surplus)
-                printfmtln(format_print_iter, iter, value_min_surplus, lower_problem_min_surplus, rel_tol, benefit_distribution)
+                printfmtln(format_print_iter, iter, value_min_surplus, lower_problem_min_surplus, rel_tol*100, benefit_distribution)
             end
         end
     end
@@ -300,8 +300,8 @@ function specific_least_core(
     visited_coalitions = [Set(player_set), Set([])]
 
     # printing formats
-    format_print_head = "{:<15s} {:^15s} {:^15s} {:^15s} {:<s}"  # for the header
-    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2f} {:<s}"  # for the iterations
+    format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
+    format_print_iter = "{:<15s} {:< 13.2e} {:< 13.2e} {:< 13.2f} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
@@ -385,7 +385,7 @@ function specific_least_core(
             benefit_distribution = string(current_profit_dist.data)
 
             rel_tol = compute_relative_tol(lower_problem_min_surplus, min_surplus)
-            printfmtln(format_print_iter, iter, min_surplus, lower_problem_min_surplus, rel_tol, benefit_distribution)
+            printfmtln(format_print_iter, iter, min_surplus, lower_problem_min_surplus, rel_tol*100, benefit_distribution)
         end
     end
 
@@ -615,8 +615,8 @@ function specific_in_core(
     visited_coalitions = [Set(player_set), Set([])]
 
     # printing formats
-    format_print_head = "{:<15s} {:^15s} {:^15s} {:^15s} {:<s}"  # for the header
-    format_print_iter = "{:<15s} {:> 13.2e} {:> 13.2e} {:> 13.2f} {:<s}"  # for the iterations
+    format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
+    format_print_iter = "{:<15s} {:< 13.2e} {:< 13.2e} {:< 13.2f} {:<s}"  # for the iterations
 
     # if verbose, print header
     if verbose
