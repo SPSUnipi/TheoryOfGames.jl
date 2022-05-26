@@ -75,96 +75,96 @@ example_list = [
 ]
 
 
-# @testset "Game tests - EnumMode" begin
+@testset "Game tests - EnumMode" begin
 
-#     @testset "shapley" begin
-#         println("TEST SET - SHAPLEY")
-#         for example in example_list
-#             test_example("ENUM_" * example.name, shapley_value, to_EnumMode(example))
-#         end
-#     end
+    @testset "shapley" begin
+        println("TEST SET - SHAPLEY")
+        for example in example_list
+            test_example("ENUM_" * example.name, shapley_value, to_EnumMode(example))
+        end
+    end
 
-#     @testset "least_core" begin
-#         println("TEST SET - LEAST CORE")
-#         for example in example_list
-#             test_example("ENUM_" * example.name, least_core, to_EnumMode(example), OPTIMIZER)
-#         end
-#     end
+    @testset "least_core" begin
+        println("TEST SET - LEAST CORE")
+        for example in example_list
+            test_example("ENUM_" * example.name, least_core, to_EnumMode(example), OPTIMIZER)
+        end
+    end
 
-#     @testset "nucleolus" begin
-#         println("TEST SET - NUCLEOLUS")
-#         for example in example_list
-#             test_example("ENUM_" * example.name, nucleolus, to_EnumMode(example), OPTIMIZER)
-#         end
-#     end
+    @testset "nucleolus" begin
+        println("TEST SET - NUCLEOLUS")
+        for example in example_list
+            test_example("ENUM_" * example.name, nucleolus, to_EnumMode(example), OPTIMIZER)
+        end
+    end
 
-#     @testset "in_core" begin
-#         println("TEST SET - IN CORE")
-#         for example in example_list
-#             test_example("ENUM_" * example.name, in_core, to_EnumMode(example), OPTIMIZER)
-#         end
-#     end
+    @testset "in_core" begin
+        println("TEST SET - IN CORE")
+        for example in example_list
+            test_example("ENUM_" * example.name, in_core, to_EnumMode(example), OPTIMIZER)
+        end
+    end
 
-#     @testset "verify_in_core" begin
-#         println("TEST SET - VERIFY IN CORE")
-#         for example in example_list
+    @testset "verify_in_core" begin
+        println("TEST SET - VERIFY IN CORE")
+        for example in example_list
 
-#             player_set = example.player_set
-#             example_mode = to_EnumMode(example)
+            player_set = example.player_set
+            example_mode = to_EnumMode(example)
 
-#             # obtain an in-core solution
-#             val_dist = in_core(example_mode, OPTIMIZER)
+            # obtain an in-core solution
+            val_dist = in_core(example_mode, OPTIMIZER)
 
-#             # test that the in-core solution is actually recognized in the core
-#             @test verify_in_core(val_dist, example_mode, OPTIMIZER) == true
+            # test that the in-core solution is actually recognized in the core
+            @test verify_in_core(val_dist, example_mode, OPTIMIZER) == true
 
-#             # create an artificial solution likely not to be in the core
-#             equal_vals = JuMP.Containers.DenseAxisArray(
-#                 fill(sum(values(val_dist))/length(player_set), length(player_set)), player_set
-#             )
+            # create an artificial solution likely not to be in the core
+            equal_vals = JuMP.Containers.DenseAxisArray(
+                fill(sum(values(val_dist))/length(player_set), length(player_set)), player_set
+            )
 
-#             # test that the artificial distribution does not belong to the core
-#             @test verify_in_core(equal_vals, example_mode, OPTIMIZER; atol=ATOL_TEST) == false
-#         end
-#     end
+            # test that the artificial distribution does not belong to the core
+            @test verify_in_core(equal_vals, example_mode, OPTIMIZER; atol=ATOL_TEST) == false
+        end
+    end
 
-#     @testset "var_core" begin
-#         println("TEST SET - VAR CORE")
-#         for example in example_list
-#             test_example("ALL_" * example.name, var_in_core, to_EnumMode(example), OPTIMIZER)
-#         end
-#     end
+    @testset "var_core" begin
+        println("TEST SET - VAR CORE")
+        for example in example_list
+            test_example("ALL_" * example.name, var_in_core, to_EnumMode(example), OPTIMIZER)
+        end
+    end
 
-#     @testset "ref_in_core" begin
-#         println("TEST SET - REF IN CORE")
-#         for example in example_list
-#             # reference distribution
-#             ref_dist = Dict(
-#                 zip(example.player_set, fill(0.0, length(example.player_set)))
-#             )
-#             test_example("ALL_" * example.name, ref_in_core, to_EnumMode(example), ref_dist, OPTIMIZER)
-#         end
-#     end
+    @testset "ref_in_core" begin
+        println("TEST SET - REF IN CORE")
+        for example in example_list
+            # reference distribution
+            ref_dist = Dict(
+                zip(example.player_set, fill(0.0, length(example.player_set)))
+            )
+            test_example("ALL_" * example.name, ref_in_core, to_EnumMode(example), ref_dist, OPTIMIZER)
+        end
+    end
 
-#     @testset "var_least_core" begin
-#         println("TEST SET - VAR LEAST CORE")
-#         for example in example_list
-#             test_example("ALL_" * example.name, var_least_core, to_EnumMode(example), OPTIMIZER)
-#         end
-#     end
+    @testset "var_least_core" begin
+        println("TEST SET - VAR LEAST CORE")
+        for example in example_list
+            test_example("ALL_" * example.name, var_least_core, to_EnumMode(example), OPTIMIZER)
+        end
+    end
 
-#     @testset "ref_least_core" begin
-#         println("TEST SET - REF LEAST CORE")
-#         for example in example_list
-#             # reference distribution
-#             ref_dist = Dict(
-#                 zip(example.player_set, fill(0.0, length(example.player_set)))
-#             )
-#             test_example("ALL_" * example.name, ref_least_core, to_EnumMode(example), ref_dist, OPTIMIZER)
-#         end
-#     end
+    @testset "ref_least_core" begin
+        println("TEST SET - REF LEAST CORE")
+        for example in example_list
+            # reference distribution
+            ref_dist = Dict(
+                zip(example.player_set, fill(0.0, length(example.player_set)))
+            )
+            test_example("ALL_" * example.name, ref_least_core, to_EnumMode(example), ref_dist, OPTIMIZER)
+        end
+    end
 
-# end
+end
 
 @testset "Games tests - IterMode" begin
     
