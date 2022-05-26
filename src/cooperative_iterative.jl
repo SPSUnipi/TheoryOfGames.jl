@@ -175,16 +175,15 @@ function least_core(
                     push!(history, iter_data)
                 end
             end
+        end
 
+        # if verbose print log
+        if verbose
+            # update coalition
+            benefit_distribution = string(current_profit_dist.data)
 
-            # if verbose print log
-            if verbose
-                # update coalition
-                benefit_distribution = string(current_profit_dist.data)
-
-                rel_tol = compute_relative_tol(lower_problem_min_surplus, value_min_surplus)
-                printfmtln(format_print_iter, iter, value_min_surplus, lower_problem_min_surplus, rel_tol*100, benefit_distribution)
-            end
+            rel_tol = compute_relative_tol(lower_problem_min_surplus, value_min_surplus)
+            printfmtln(format_print_iter, iter, value_min_surplus, lower_problem_min_surplus, rel_tol*100, benefit_distribution)
         end
     end
 
