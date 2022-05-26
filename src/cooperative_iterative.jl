@@ -191,7 +191,7 @@ function least_core(
     profit_distribution = Dict(zip(player_set, value.(profit_dist).data))
 
     if raw_outputs
-        return profit_distribution, value_min_surplus, history, model_dist
+        return profit_distribution, value_min_surplus, history, visited_coalitions, model_dist
     else
         return profit_distribution
     end
@@ -268,7 +268,7 @@ function specific_least_core(
         println("PHASE 1: Start first least core analysis\n")
     end
 
-    profit_distribution, min_surplus, history, model_dist = least_core(
+    profit_distribution, min_surplus, history, visited_coalitions, model_dist = least_core(
         mode, optimizer;
         rtol=rtol,
         atol=atol,
@@ -291,12 +291,12 @@ function specific_least_core(
     # update objective function of the least_core model
     dist_objective(model_dist, player_set)
 
+    # fix value of the min_surplus
+    fix(model_dist[:min_surplus], min_surplus, force=true)
+
     # initialization while condition
     continue_while = true
     iter = 0
-
-    # visited coalitions
-    visited_coalitions = [Set(player_set), Set([])]
 
     # printing formats
     format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
@@ -353,7 +353,7 @@ function specific_least_core(
                     # specify that the profit of each subset of the group is better off with the grand coalition
                     con_it = @constraint(
                         model_dist,
-                        sum(GenericAffExpr{Float64,VariableRef}[model_dist[:profit_dist][pl] for pl in least_profitable_coalition]) >= row.coalition_benefit + min_surplus
+                        sum(GenericAffExpr{Float64,VariableRef}[model_dist[:profit_dist][pl] for pl in least_profitable_coalition]) >= row.coalition_benefit + model_dist[:min_surplus]
                     )
 
                     # data of the iteration
