@@ -736,7 +736,7 @@ verbose : Bool (optional, default true)
 
 Outputs
 ------
-var_core : Dict
+var_in_core : Dict
     Dictionary of the fair distributions of the profits among the players
 """
 function var_in_core(mode::IterMode, optimizer; kwargs...)
