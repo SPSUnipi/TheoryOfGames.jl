@@ -76,4 +76,4 @@ end
 Auxiliary function to compute the relative tolerance between two quantities x and y
 
 """
-compute_relative_tol(x, y, norm=abs, atol=1e-6) = norm(x-y) / (atol + max(x, y))
+compute_relative_tol(x, y, norm=abs) = norm(x-y) / (atol + abs(x - y))
