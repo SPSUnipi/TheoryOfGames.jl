@@ -226,6 +226,8 @@ raw_outputs : Bool (optional, default false)
 use_start_value : Bool (optional, default false)
     When true, in the iterative process the previous iteration value is used as initialization
     for the followin iteration
+max_iter : Bool (optional, default 100)
+    Maximum number of iterations of the process
 
 Outputs
 ------
@@ -246,6 +248,7 @@ function specific_least_core(
         verbose=true,
         raw_outputs=false,
         use_start_value=false,
+        max_iter=100,
     )
 
     if verbose
@@ -275,9 +278,6 @@ function specific_least_core(
     # update objective function of the least_core model
     dist_objective(model_dist, player_set)
 
-    # get JuMP variable of the profit distribution
-    profit_dist = model_dist[:profit_dist]
-
     # initialization while condition
     continue_while = true
     iter = 0
@@ -296,9 +296,9 @@ function specific_least_core(
     optimize!(model_dist)
     
     # initialize profit_distribution
-    current_profit_dist = value.(profit_dist)
+    current_profit_dist = value.(model_dist[:profit_dist])
 
-    while continue_while
+    while continue_while && iter <= max_iter
 
         # update counter
         iter += 1
@@ -326,7 +326,7 @@ function specific_least_core(
                 # specify that the profit of each subset of the group is better off with the grand coalition
                 con_it = @constraint(
                     model_dist,
-                    sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
+                    sum(GenericAffExpr{Float64,VariableRef}[model_dist[:profit_dist][pl] for pl in worst_coal_set]) >= worst_coal_benefit + min_surplus
                 )
                 
                 if use_start_value
@@ -338,7 +338,7 @@ function specific_least_core(
                 optimize!(model_dist)
 
                 # update current profit distribution
-                current_profit_dist = value.(profit_dist)
+                current_profit_dist = value.(model_dist[:profit_dist])
                 
                 # update coalition
                 added_coalition = string(worst_coal_set) * ": " * string(current_profit_dist.data)
@@ -530,6 +530,8 @@ raw_outputs : Bool (optional, default false)
 use_start_value : Bool (optional, default false)
     When true, in the iterative process the previous iteration value is used as initialization
     for the followin iteration
+max_iter : Bool (optional, default 100)
+    Maximum number of iterations of the process
 
 Outputs
 ------
@@ -550,6 +552,7 @@ function specific_in_core(
         verbose=true,
         raw_outputs=false,
         use_start_value=false,
+        max_iter=100,
     )
 
     player_set = mode.player_set
@@ -600,7 +603,7 @@ function specific_in_core(
         printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tolerance", "Added coalition : benefit allocation")
     end
 
-    while continue_while
+    while continue_while && iter <= max_iter
 
         # update counter
         iter += 1
@@ -716,7 +719,7 @@ end
 
 
 """
-    var_core(mode, optimizer; verbose)
+    var_in_core(mode, optimizer; verbose)
 
 Function to calculte a stable profit distribution that belongs to the core
 and minimizes the variance of the profit allocation among the plauers
@@ -736,7 +739,7 @@ Outputs
 var_core : Dict
     Dictionary of the fair distributions of the profits among the players
 """
-function var_core(mode::IterMode, optimizer; kwargs...)
+function var_in_core(mode::IterMode, optimizer; kwargs...)
 
     # create the objective function for the problem
     function var_objective(m, player_set)
