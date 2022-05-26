@@ -64,6 +64,8 @@ optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
+raw_outputs : Bool (optional, default false)
+    When true, it returns all raw outputs
 
 Outputs
 ------
@@ -138,6 +140,8 @@ verbose : Bool (optional, default true)
 tol (optional, default 1e-5)
     Accepted tolerance for identifying the active constraints in the optimization
     procedure
+raw_outputs : Bool (optional, default false)
+    When true, it returns all raw outputs
 
 Outputs
 ------
@@ -255,7 +259,11 @@ function nucleolus(
 
     nuc_dist = Dict(zip(player_set, value.(profit_dist).data))
 
-    return nuc_dist
+    if raw_outputs
+        return nuc_dist, 0.0, model_dist
+    else
+        return nuc_dist
+    end
 end
 
 
@@ -279,6 +287,8 @@ optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
+raw_outputs : Bool (optional, default false)
+    When true, it returns all raw outputs
 
 Outputs
 ------
@@ -290,6 +300,7 @@ function specific_in_core(
         dist_objective::Function,
         optimizer;
         verbose=true,
+        raw_outputs=false,
         kwargs...
     )
 
@@ -325,7 +336,11 @@ function specific_in_core(
         specific_in_core_dist = nothing
     end
 
-    return specific_in_core_dist
+    if raw_outputs
+        return specific_in_core_dist, 0.0, model_dist
+    else
+        return specific_in_core_dist
+    end
 end
 
 
@@ -529,7 +544,8 @@ optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
-utilities (optional, default nothing)
+raw_outputs : Bool (optional, default false)
+    When true, it returns all raw outputs
 
 Outputs
 ------
