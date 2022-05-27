@@ -34,6 +34,9 @@ use_start_value : Bool (optional, default false)
     for the followin iteration
 max_iter : Bool (optional, default 100)
     Maximum number of iterations of the process
+preload_coalitions : Vector (optional, default empty)
+    List of coalitions whose benefit shall be automatically
+    included before the iterative procedure starts
 
 Outputs
 ------
@@ -54,6 +57,8 @@ function least_core(
         raw_outputs=false,
         use_start_value=false,
         max_iter=100,
+        preload_coalitions=[],
+        exclude_visited_coalitions=false,
     )
 
     player_set = mode.player_set
@@ -87,6 +92,15 @@ function least_core(
     # specify the objective maximize the benefit or remaining in the coalition
     @objective(model_dist, Max, min_surplus)
 
+    # Add constraints for preloaded coalitions
+    @constraint(model_dist, preloaded_coalitions[precoal in preload_coalitions],
+        sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in precoal]) >= callback_benefit_by_coalition(precoal) + min_surplus
+    )
+
+    if !isempty(preload_coalitions)
+        println("Preload $(length(preloaded_coalitions)) coalitions")
+    end
+
     # initialization of the min_surplus of the inner problem
     lower_problem_min_surplus = lower_bound
 
@@ -99,7 +113,7 @@ function least_core(
     value_min_surplus = nothing
 
     # visited coalitions
-    visited_coalitions = [Set(player_set), Set([])]
+    visited_coalitions = [Set.(preload_coalitions); Set(player_set); Set([])]
 
     # printing formats
     format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
@@ -149,7 +163,7 @@ function least_core(
 
                 least_profitable_coalition = Set(row.least_profitable_coalition)
 
-                if least_profitable_coalition ∉ visited_coalitions
+                if !exclude_visited_coalitions || least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
                     push!(visited_coalitions, least_profitable_coalition)
@@ -262,6 +276,8 @@ function specific_least_core(
         raw_outputs=false,
         use_start_value=false,
         max_iter=100,
+        exclude_visited_coalitions=false,
+        kwargs...
     )
 
     if verbose
@@ -275,7 +291,10 @@ function specific_least_core(
         lower_bound=lower_bound,
         upper_bound=upper_bound,
         verbose=verbose,
-        raw_outputs=true
+        raw_outputs=true,
+        max_iter=max_iter,
+        exclude_visited_coalitions=exclude_visited_coalitions,
+        kwargs...
     )
     
     if verbose
@@ -296,7 +315,7 @@ function specific_least_core(
 
     # initialization while condition
     continue_while = true
-    iter = 0
+    iter = history[end].iteration
 
     # printing formats
     format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
@@ -345,7 +364,7 @@ function specific_least_core(
 
                 least_profitable_coalition = Set(row.least_profitable_coalition)
 
-                if least_profitable_coalition ∉ visited_coalitions
+                if !exclude_visited_coalitions || least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
                     push!(visited_coalitions, least_profitable_coalition)
@@ -551,6 +570,9 @@ use_start_value : Bool (optional, default false)
     for the followin iteration
 max_iter : Bool (optional, default 100)
     Maximum number of iterations of the process
+preload_coalitions : Vector (optional, default empty)
+    List of coalitions whose benefit shall be automatically
+    included before the iterative procedure starts
 
 Outputs
 ------
@@ -572,6 +594,9 @@ function specific_in_core(
         raw_outputs=false,
         use_start_value=false,
         max_iter=100,
+        preload_coalitions=[],
+        exclude_visited_coalitions=false,
+        kwargs...
     )
 
     player_set = mode.player_set
@@ -599,6 +624,15 @@ function specific_in_core(
     # specify that the total profit distribution cannot exceed the total benefit
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == benefit_grand_coalition)
 
+    # Add constraints for preloaded coalitions
+    @constraint(model_dist, preloaded_coalitions[precoal in preload_coalitions],
+        sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in precoal]) >= callback_benefit_by_coalition(precoal) # + 0.0 # set 0.0 to make it belong to the core
+    )
+
+    if !isempty(preload_coalitions)
+        println("Preload $(length(preloaded_coalitions)) coalitions")
+    end
+
     # specify function
     dist_objective(model_dist, player_set)
 
@@ -611,7 +645,7 @@ function specific_in_core(
     # initialization while condition
     continue_while = true
     iter = 0
-    visited_coalitions = [Set(player_set), Set([])]
+    visited_coalitions = [Set.(preload_coalitions); Set(player_set); Set([])]
 
     # printing formats
     format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
@@ -655,7 +689,7 @@ function specific_in_core(
 
             for row in output_data
 
-                if row.least_profitable_coalition ∉ visited_coalitions
+                if !exclude_visited_coalitions || row.least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
                     push!(visited_coalitions, row.least_profitable_coalition)
@@ -711,7 +745,7 @@ end
 
 
 """
-    in_core(mode, optimizer; verbose, utilities)
+    in_core(mode, optimizer; verbose, ...)
 
 Function to calculte a stable profit distribution that belongs to the core
 for profit distribution for a game described by the utility function
