@@ -58,7 +58,7 @@ function least_core(
         use_start_value=false,
         max_iter=100,
         preload_coalitions=[],
-        exclude_visited_coalitions=false,
+        exclude_visited_coalitions=true,
     )
 
     player_set = mode.player_set
@@ -276,7 +276,7 @@ function specific_least_core(
         raw_outputs=false,
         use_start_value=false,
         max_iter=100,
-        exclude_visited_coalitions=false,
+        exclude_visited_coalitions=true,
         kwargs...
     )
 
@@ -595,7 +595,7 @@ function specific_in_core(
         use_start_value=false,
         max_iter=100,
         preload_coalitions=[],
-        exclude_visited_coalitions=false,
+        exclude_visited_coalitions=true,
         kwargs...
     )
 
