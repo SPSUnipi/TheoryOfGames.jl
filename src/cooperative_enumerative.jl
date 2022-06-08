@@ -178,7 +178,7 @@ function nucleolus(
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == utilities[Set(player_set)])
 
     # specify that the profit of each subset of the group is better off with the grand coalition
-    @constraint(model_dist, con_subset_profit[comb in comb_set],
+    @constraint(model_dist, con_subset_profit[comb in comb_set; 0 < length(comb) < length(player_set)],
         sum([profit_dist[pl] for pl in comb]) >= utilities[Set(comb)] + min_surplus
     )
 
@@ -189,15 +189,18 @@ function nucleolus(
     pbar = verbose ? ProgressBar(1:n_coalitions) : nothing
 
     fixed_constraints = 1  # initialize constraint to the null value
+    n_iterations = 1  # number of iterations
 
     # optimize the iteration
     optimize!(model_dist)
 
     # last visited combination, to avoid repetitions
-    last_visited_combs = [empty_set(player_set)]
-    visited_nodes = []
+    last_visited_combs = [empty_set(player_set), Set(player_set)]
+    visited_nodes = [empty_set(player_set), Set(player_set)]
 
     while (fixed_constraints < n_coalitions)
+
+        n_iterations += 1
 
         # calculate the value of the current min_surplus
         min_surplus_val = value(min_surplus)
@@ -212,23 +215,28 @@ function nucleolus(
         # thus update the constraint to specify the corresponding value of min_surplus
         # as limit
         for comb in comb_set
-            if dual_val[comb] > tol
+            if 0 < length(comb) < length(player_set)
+                if dual_val[comb] > tol
+                    
+                    s_comb = Set(comb)
 
-                # update visited combs
-                push!(visited_combs, comb)
+                    if s_comb ∉ visited_nodes
+                        # get current rhs of the constraint
+                        pre_rhs = normalized_rhs(con_subset_profit[comb])
 
-                if comb ∉ last_visited_combs
-                    # get current rhs of the constraint
-                    pre_rhs = normalized_rhs(con_subset_profit[comb])
+                        # disable min_surplus for the specific constraint
+                        set_normalized_coefficient(con_subset_profit[comb], min_surplus, 0.0)
 
-                    # disable min_surplus for the specific constraint
-                    set_normalized_coefficient(con_subset_profit[comb], min_surplus, 0.0)
+                        # update rhs
+                        set_normalized_rhs(con_subset_profit[comb], pre_rhs + min_surplus_val)
 
-                    # update rhs
-                    set_normalized_rhs(con_subset_profit[comb], pre_rhs + min_surplus_val)
+                        # update visited combs
+                        push!(visited_combs, s_comb)
+                        push!(visited_nodes, s_comb)
 
-                    # update number of fixed constraints
-                    fixed_constraints += 1
+                        # update number of fixed constraints
+                        fixed_constraints += 1
+                    end
                 end
             end
         end
@@ -236,13 +244,13 @@ function nucleolus(
         # optimize the iteration
         optimize!(model_dist)
 
-        if Set(last_visited_combs) == Set(visited_nodes)
+        if Set(last_visited_combs) == Set(visited_combs)
             # if previous and visited combs coincide, then
             # stop the iterations
-            fixed_constraints = n_coalitions
+            # fixed_constraints = n_coalitions
             break
         else
-            last_visited_combs = visited_nodes
+            last_visited_combs = visited_combs
         end
 
         # if option verbose update progress bar
@@ -261,7 +269,7 @@ function nucleolus(
     nuc_dist = Dict(zip(player_set, value.(profit_dist).data))
 
     if raw_outputs
-        return nuc_dist, 0.0, model_dist
+        return nuc_dist, n_iterations, model_dist
     else
         return nuc_dist
     end
