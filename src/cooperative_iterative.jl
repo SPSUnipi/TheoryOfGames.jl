@@ -139,9 +139,11 @@ function least_core(
         current_profit_dist = value.(profit_dist)
 
         # get a vector in which each row contains a named tuple with:
-        # (1) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
-        # (2) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
-        # (3) the minimum surplus of that coalition [min_surplus]
+        # (1) a vector-like representing the fractional participance of each uer to the worst coalition
+        #     when the value is 1, that user belongs to the worst coalition, 0 does not belong
+        # (2) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
+        # (3) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
+        # (4) the minimum surplus of that coalition [min_surplus]
         output_data = callback_worst_coalition(current_profit_dist)
 
         # get the minimum surplus of the iteration
@@ -341,9 +343,11 @@ function specific_least_core(
         current_profit_dist = value.(model_dist[:profit_dist])
 
         # get a vector in which each row contains a named tuple with:
-        # (1) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
-        # (2) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
-        # (3) the minimum surplus of that coalition [min_surplus]
+        # (1) a vector-like representing the fractional participance of each uer to the worst coalition
+        #     when the value is 1, that user belongs to the worst coalition, 0 does not belong
+        # (2) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
+        # (3) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
+        # (4) the minimum surplus of that coalition [min_surplus]
         output_data = callback_worst_coalition(current_profit_dist)
 
         # get the minimum surplus of the iteration
@@ -667,9 +671,11 @@ function specific_in_core(
         # get current profit distribution
         current_profit_dist = value.(profit_dist)
         # get a vector in which each row contains a named tuple with:
-        # (1) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
-        # (2) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
-        # (3) the minimum surplus of that coalition [min_surplus]
+        # (1) a vector-like representing the fractional participance of each uer to the worst coalition
+        #     when the value is 1, that user belongs to the worst coalition, 0 does not belong
+        # (2) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
+        # (3) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
+        # (4) the minimum surplus of that coalition [min_surplus]
         output_data = callback_worst_coalition(current_profit_dist)
 
         # get the minimum surplus of the iteration
