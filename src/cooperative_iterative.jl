@@ -163,7 +163,7 @@ function least_core(
 
             for row in output_data
 
-                least_profitable_coalition_status = Set(row.least_profitable_coalition_status)
+                least_profitable_coalition_status = row.least_profitable_coalition_status
 
                 if !exclude_visited_coalitions || least_profitable_coalition_status ∉ visited_coalitions
 
@@ -368,7 +368,7 @@ function specific_least_core(
 
             for row in output_data
 
-                least_profitable_coalition_status = Set(row.least_profitable_coalition_status)
+                least_profitable_coalition_status = row.least_profitable_coalition_status
 
                 if !exclude_visited_coalitions || least_profitable_coalition_status ∉ visited_coalitions
 
@@ -380,7 +380,7 @@ function specific_least_core(
                         model_dist,
                         sum(GenericAffExpr{Float64,VariableRef}[
                             least_profitable_coalition_status[pl] * model_dist[:profit_dist][pl]
-                            for pl in least_profitable_coalition
+                            for pl in player_set
                         ]) >= row.coalition_benefit + model_dist[:min_surplus]
                     )
 
@@ -700,9 +700,9 @@ function specific_in_core(
 
             for row in output_data
 
-                if !exclude_visited_coalitions || row.least_profitable_coalition_status ∉ visited_coalitions
+                least_profitable_coalition_status = row.least_profitable_coalition_status
 
-                    least_profitable_coalition_status = Set(row.least_profitable_coalition_status)
+                if !exclude_visited_coalitions || least_profitable_coalition_status ∉ visited_coalitions
 
                     # update visited_coalitions
                     push!(visited_coalitions, least_profitable_coalition_status)
@@ -712,7 +712,7 @@ function specific_in_core(
                         model_dist,
                         sum(GenericAffExpr{Float64,VariableRef}[
                             least_profitable_coalition_status[pl] * profit_dist[pl]
-                            for pl in least_profitable_coalition
+                            for pl in player_set
                         ]) >= row.coalition_benefit # + 0.0 # set 0.0 to make it belong to the core
                     )
 
