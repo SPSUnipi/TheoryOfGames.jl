@@ -43,7 +43,11 @@ function to_IterMode(example)
     util_combs = utility_combs(example.player_set, example.utility)
     keys_no_grand_coalition = setdiff(keys(util_combs), [Set(), Set(example.player_set)])
 
-    let util_combs=util_combs, keys_no_grand_coalition=keys_no_grand_coalition
+    let (
+            player_set=example.player_set,
+            util_combs=util_combs, 
+            keys_no_grand_coalition=keys_no_grand_coalition
+        )
         
         callback_benefit_by_coalition = (coal)->util_combs[Set(coal)]
 
@@ -54,6 +58,10 @@ function to_IterMode(example)
             )
             min_surplus, least_benefit_coal = findmin(min_surplus_combs)
             return [(
+                least_profitable_coalition_status=DenseArray(
+                    [pl in least_benefit_coal ? 1.0 : 0.0 for pl in player_set],
+                    player_set,
+                ),
                 least_profitable_coalition=least_benefit_coal,
                 coalition_benefit=util_combs[Set(least_benefit_coal)],
                 min_surplus=min_surplus,
