@@ -37,6 +37,16 @@ max_iter : Bool (optional, default 100)
 preload_coalitions : Vector (optional, default empty)
     List of coalitions whose benefit shall be automatically
     included before the iterative procedure starts
+best_objective_stop_option : String (optional, default nothing)
+    Name of the option to stop the lower problem as it reaches a preset value.
+    When this option is nothing, this feature is not used.
+    When this option is non-nothing, in every iteration, a minimum convergence criterion is added
+    so to stop the lower problem as soon as a minimum fesible objective function is reached.
+    This minimum objective value is obtained with respect to the solution of the master problem
+    multiplied by the factor "best_objective_stop_factor"
+    If gurobi is used, this option is BestObjStop
+best_objective_stop_factor : Number (optional, default 0.95)
+    Factor used in the "best_objective_stop_option" approach
 
 Outputs
 ------
@@ -59,6 +69,8 @@ function least_core(
         max_iter=100,
         preload_coalitions=[],
         exclude_visited_coalitions=true,
+        best_objective_stop_option=nothing,
+        best_objective_stop_factor=0.95,
     )
 
     player_set = mode.player_set
@@ -138,13 +150,20 @@ function least_core(
         # get current profit distribution
         current_profit_dist = value.(profit_dist)
 
+        # update best objective stop if applicable
+        modify_solver_options = []
+        if !isnothing(best_objective_stop_option)
+            best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor - 1e-3
+            push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
+        end
+
         # get a vector in which each row contains a named tuple with:
         # (1) a vector-like representing the fractional participance of each uer to the worst coalition
         #     when the value is 1, that user belongs to the worst coalition, 0 does not belong
         # (2) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
         # (3) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
         # (4) the minimum surplus of that coalition [min_surplus]
-        output_data = callback_worst_coalition(current_profit_dist)
+        output_data = callback_worst_coalition(current_profit_dist; modify_solver_options=modify_solver_options)
 
         # get the minimum surplus of the iteration
         lower_problem_min_surplus = output_data[1].min_surplus
@@ -164,11 +183,12 @@ function least_core(
             for row in output_data
 
                 least_profitable_coalition_status = row.least_profitable_coalition_status
+                least_profitable_coalition_status_vec = [row.least_profitable_coalition_status[pl] for pl in player_set]
 
-                if !exclude_visited_coalitions || least_profitable_coalition_status ∉ visited_coalitions
+                if !exclude_visited_coalitions || least_profitable_coalition_status_vec ∉ visited_coalitions
 
                     # update visited_coalitions
-                    push!(visited_coalitions, least_profitable_coalition_status)
+                    push!(visited_coalitions, least_profitable_coalition_status_vec)
 
                     # specify that the profit of each subset of the group is better off with the grand coalition
                     con_it = @constraint(
@@ -192,6 +212,11 @@ function least_core(
                     # add the iteration to the history
                     push!(history, iter_data)
                 end
+            end
+
+            if use_start_value
+                # set start value
+                set_start_value.(all_variables(model_dist), value_start)
             end
         end
 
@@ -259,6 +284,16 @@ use_start_value : Bool (optional, default false)
     for the followin iteration
 max_iter : Bool (optional, default 100)
     Maximum number of iterations of the process
+best_objective_stop_option : String (optional, default nothing)
+    Name of the option to stop the lower problem as it reaches a preset value.
+    When this option is nothing, this feature is not used.
+    When this option is non-nothing, in every iteration, a minimum convergence criterion is added
+    so to stop the lower problem as soon as a minimum fesible objective function is reached.
+    This minimum objective value is obtained with respect to the solution of the master problem
+    multiplied by the factor "best_objective_stop_factor"
+    If gurobi is used, this option is BestObjStop
+best_objective_stop_factor : Number (optional, default 0.95)
+    Factor used in the "best_objective_stop_option" approach
 
 Outputs
 ------
@@ -281,6 +316,8 @@ function specific_least_core(
         use_start_value=false,
         max_iter=100,
         exclude_visited_coalitions=true,
+        best_objective_stop_option=nothing,
+        best_objective_stop_factor=0.95,
         kwargs...
     )
 
@@ -298,6 +335,8 @@ function specific_least_core(
         raw_outputs=true,
         max_iter=max_iter,
         exclude_visited_coalitions=exclude_visited_coalitions,
+        best_objective_stop_option=best_objective_stop_option,
+        best_objective_stop_factor=best_objective_stop_factor,
         kwargs...
     )
     
@@ -344,6 +383,13 @@ function specific_least_core(
         # get current profit distribution
         current_profit_dist = value.(model_dist[:profit_dist])
 
+        # update best objective stop if applicable
+        modify_solver_options = []
+        if !isnothing(best_objective_stop_option)
+            best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor - 1e-3
+            push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
+        end
+
         # get a vector in which each row contains a named tuple with:
         # (1) a vector-like representing the fractional participance of each uer to the worst coalition
         #     when the value is 1, that user belongs to the worst coalition, 0 does not belong
@@ -369,11 +415,12 @@ function specific_least_core(
             for row in output_data
 
                 least_profitable_coalition_status = row.least_profitable_coalition_status
+                least_profitable_coalition_status_vec = [row.least_profitable_coalition_status[pl] for pl in player_set]
 
-                if !exclude_visited_coalitions || least_profitable_coalition_status ∉ visited_coalitions
+                if !exclude_visited_coalitions || least_profitable_coalition_status_vec ∉ visited_coalitions
 
                     # update visited_coalitions
-                    push!(visited_coalitions, least_profitable_coalition_status)
+                    push!(visited_coalitions, least_profitable_coalition_status_vec)
 
                     # specify that the profit of each subset of the group is better off with the grand coalition
                     con_it = @constraint(
@@ -582,6 +629,16 @@ max_iter : Bool (optional, default 100)
 preload_coalitions : Vector (optional, default empty)
     List of coalitions whose benefit shall be automatically
     included before the iterative procedure starts
+best_objective_stop_option : String (optional, default nothing)
+    Name of the option to stop the lower problem as it reaches a preset value.
+    When this option is nothing, this feature is not used.
+    When this option is non-nothing, in every iteration, a minimum convergence criterion is added
+    so to stop the lower problem as soon as a minimum fesible objective function is reached.
+    This minimum objective value is obtained with respect to the solution of the master problem
+    multiplied by the factor "best_objective_stop_factor"
+    If gurobi is used, this option is BestObjStop
+best_objective_stop_factor : Number (optional, default 0.95)
+    Factor used in the "best_objective_stop_option" approach
 
 Outputs
 ------
@@ -605,6 +662,8 @@ function specific_in_core(
         max_iter=100,
         preload_coalitions=[],
         exclude_visited_coalitions=true,
+        best_objective_stop_option=nothing,
+        best_objective_stop_factor=0.95,
         kwargs...
     )
 
@@ -675,6 +734,14 @@ function specific_in_core(
 
         # get current profit distribution
         current_profit_dist = value.(profit_dist)
+
+        # update best objective stop if applicable
+        modify_solver_options = []
+        if !isnothing(best_objective_stop_option)
+            best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor - 1e-3
+            push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
+        end
+        
         # get a vector in which each row contains a named tuple with:
         # (1) a vector-like representing the fractional participance of each uer to the worst coalition
         #     when the value is 1, that user belongs to the worst coalition, 0 does not belong
@@ -701,11 +768,12 @@ function specific_in_core(
             for row in output_data
 
                 least_profitable_coalition_status = row.least_profitable_coalition_status
+                least_profitable_coalition_status_vec = [row.least_profitable_coalition_status[pl] for pl in player_set]
 
-                if !exclude_visited_coalitions || least_profitable_coalition_status ∉ visited_coalitions
+                if !exclude_visited_coalitions || least_profitable_coalition_status_vec ∉ visited_coalitions
 
                     # update visited_coalitions
-                    push!(visited_coalitions, least_profitable_coalition_status)
+                    push!(visited_coalitions, least_profitable_coalition_status_vec)
 
                     # specify that the profit of each subset of the group is better off with the grand coalition
                     con_it = @constraint(
