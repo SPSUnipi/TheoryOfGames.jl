@@ -634,11 +634,10 @@ best_objective_stop_option : String (optional, default nothing)
     When this option is nothing, this feature is not used.
     When this option is non-nothing, in every iteration, a minimum convergence criterion is added
     so to stop the lower problem as soon as a minimum fesible objective function is reached.
-    This minimum objective value is obtained with respect to the solution of the master problem
-    multiplied by the factor "best_objective_stop_factor"
+    This minimum objective value after which the solver shall return the solution
     If gurobi is used, this option is BestObjStop
-best_objective_stop_factor : Number (optional, default 0.95)
-    Factor used in the "best_objective_stop_option" approach
+best_objective_stop_value : Number (optional, default -0.01)
+    Minimum objective function used for the solver to converge
 
 Outputs
 ------
@@ -663,7 +662,7 @@ function specific_in_core(
         preload_coalitions=[],
         exclude_visited_coalitions=true,
         best_objective_stop_option=nothing,
-        best_objective_stop_factor=0.95,
+        best_objective_stop_value=-1e-2,
         kwargs...
     )
 
@@ -738,8 +737,7 @@ function specific_in_core(
         # update best objective stop if applicable
         modify_solver_options = []
         if !isnothing(best_objective_stop_option)
-            best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_factor - 1e-3
-            push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
+            push!(modify_solver_options, string(best_objective_stop_option)=>best_objective_stop_value)
         end
         
         # get a vector in which each row contains a named tuple with:
@@ -748,7 +746,7 @@ function specific_in_core(
         # (2) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
         # (3) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
         # (4) the minimum surplus of that coalition [min_surplus]
-        output_data = callback_worst_coalition(current_profit_dist)
+        output_data = callback_worst_coalition(current_profit_dist; modify_solver_options=modify_solver_options)
 
         # get the minimum surplus of the iteration
         lower_problem_min_surplus = output_data[1].min_surplus
