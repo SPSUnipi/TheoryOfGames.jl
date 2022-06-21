@@ -635,9 +635,11 @@ best_objective_stop_option : String (optional, default nothing)
     When this option is non-nothing, in every iteration, a minimum convergence criterion is added
     so to stop the lower problem as soon as a minimum fesible objective function is reached.
     This minimum objective value after which the solver shall return the solution
+    is provided as the option best_objective_stop_value
     If gurobi is used, this option is BestObjStop
 best_objective_stop_value : Number (optional, default -0.01)
     Minimum objective function used for the solver to converge
+    When the procedure starts looping 
 
 Outputs
 ------
@@ -662,7 +664,7 @@ function specific_in_core(
         preload_coalitions=[],
         exclude_visited_coalitions=true,
         best_objective_stop_option=nothing,
-        best_objective_stop_value=-1e-2,
+        best_objective_stop_value=-0.01,
         kwargs...
     )
 
@@ -713,6 +715,7 @@ function specific_in_core(
     continue_while = true
     iter = 0
     visited_coalitions = [Set.(preload_coalitions); Set(player_set); Set([])]
+    looping_ongoing = false  # true when the iterative algorithm is looping on the same solution
 
     # printing formats
     format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
@@ -737,7 +740,11 @@ function specific_in_core(
         # update best objective stop if applicable
         modify_solver_options = []
         if !isnothing(best_objective_stop_option)
-            push!(modify_solver_options, string(best_objective_stop_option)=>best_objective_stop_value)
+            if looping_ongoing
+                println("Looping identified on the same solution, skipped option $best_objective_stop_option")
+            else
+                push!(modify_solver_options, string(best_objective_stop_option)=>best_objective_stop_value)
+            end
         end
         
         # get a vector in which each row contains a named tuple with:
@@ -750,6 +757,7 @@ function specific_in_core(
 
         # get the minimum surplus of the iteration
         lower_problem_min_surplus = output_data[1].min_surplus
+        last_coalition = Set(output_data[1].least_profitable_coalition)
 
         # check if convergence has been reached: when the lower problem min surplus is non-negative
         if lower_problem_min_surplus * (1+rtol) + atol >= 0
@@ -763,10 +771,16 @@ function specific_in_core(
                 value_start = value.(all_variables(model_dist))
             end
 
+            # initialize to true and if at least a solution is included, then set it to false
+            looping_ongoing = true
+
             for row in output_data
 
                 least_profitable_coalition_status = row.least_profitable_coalition_status
                 least_profitable_coalition = Set(row.least_profitable_coalition)
+
+                # turn looping ongoing to false if all solutions have already been visited
+                looping_ongoing &= (least_profitable_coalition ∈ visited_coalitions)
 
                 if !exclude_visited_coalitions || least_profitable_coalition ∉ visited_coalitions
 
