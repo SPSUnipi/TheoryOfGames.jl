@@ -386,7 +386,7 @@ function specific_least_core(
         # update best objective stop if applicable
         modify_solver_options = []
         if !isnothing(best_objective_stop_option)
-            best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor - 1e-3
+            best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_factor - 1e-3
             push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
         end
 
@@ -738,7 +738,7 @@ function specific_in_core(
         # update best objective stop if applicable
         modify_solver_options = []
         if !isnothing(best_objective_stop_option)
-            best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor - 1e-3
+            best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_factor - 1e-3
             push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
         end
         
