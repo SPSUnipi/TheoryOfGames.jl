@@ -998,3 +998,4 @@ function verify_in_core(
     # if return value is nothing, the problem is infeasible, hence the solution does not belong to the core
     return lower_problem_min_surplus*(1+rtol) + atol >= 0.0
 end
+

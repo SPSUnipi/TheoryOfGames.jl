@@ -47,7 +47,7 @@ function to_IterMode(example)
         
         callback_benefit_by_coalition = (coal)->util_combs[Set(coal)]
 
-        function callback_worst_coalition(profit_dist)
+        function callback_worst_coalition(profit_dist; kwargs...)
             min_surplus_combs = Dict(
                 comb=>sum(Float64[profit_dist[c] for c in comb]) - util_combs[Set(comb)]
                 for comb in keys_no_grand_coalition
