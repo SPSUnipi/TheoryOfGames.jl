@@ -183,12 +183,12 @@ function least_core(
             for row in output_data
 
                 least_profitable_coalition_status = row.least_profitable_coalition_status
-                least_profitable_coalition_status_vec = [row.least_profitable_coalition_status[pl] for pl in player_set]
+                least_profitable_coalition = Set(row.least_profitable_coalition)
 
-                if !exclude_visited_coalitions || least_profitable_coalition_status_vec ∉ visited_coalitions
+                if !exclude_visited_coalitions || least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
-                    push!(visited_coalitions, least_profitable_coalition_status_vec)
+                    push!(visited_coalitions, least_profitable_coalition)
 
                     # specify that the profit of each subset of the group is better off with the grand coalition
                     con_it = @constraint(
@@ -415,12 +415,12 @@ function specific_least_core(
             for row in output_data
 
                 least_profitable_coalition_status = row.least_profitable_coalition_status
-                least_profitable_coalition_status_vec = [row.least_profitable_coalition_status[pl] for pl in player_set]
+                least_profitable_coalition = Set(row.least_profitable_coalition)
 
-                if !exclude_visited_coalitions || least_profitable_coalition_status_vec ∉ visited_coalitions
+                if !exclude_visited_coalitions || least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
-                    push!(visited_coalitions, least_profitable_coalition_status_vec)
+                    push!(visited_coalitions, least_profitable_coalition)
 
                     # specify that the profit of each subset of the group is better off with the grand coalition
                     con_it = @constraint(
@@ -768,12 +768,12 @@ function specific_in_core(
             for row in output_data
 
                 least_profitable_coalition_status = row.least_profitable_coalition_status
-                least_profitable_coalition_status_vec = [row.least_profitable_coalition_status[pl] for pl in player_set]
+                least_profitable_coalition = Set(row.least_profitable_coalition)
 
-                if !exclude_visited_coalitions || least_profitable_coalition_status_vec ∉ visited_coalitions
+                if !exclude_visited_coalitions || least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
-                    push!(visited_coalitions, least_profitable_coalition_status_vec)
+                    push!(visited_coalitions, least_profitable_coalition)
 
                     # specify that the profit of each subset of the group is better off with the grand coalition
                     con_it = @constraint(
