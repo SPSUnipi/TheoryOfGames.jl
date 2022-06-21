@@ -133,7 +133,7 @@ function least_core(
 
     # if verbose, print header
     if verbose
-        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tol. [%]", "Benefit distribution")
+        printfmtln(format_print_head, "Iteration", "Upper bound", "Lower bound", "Tol. [%]", "Benefit distribution")
     end
 
     
@@ -366,7 +366,7 @@ function specific_least_core(
 
     # if verbose, print header
     if verbose
-        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tol. [%]", "Benefit distribution")
+        printfmtln(format_print_head, "Iteration", "Upper bound", "Lower bound", "Tol. [%]", "Benefit distribution")
     end
 
     # initialize variable
@@ -720,7 +720,7 @@ function specific_in_core(
 
     # if verbose, print header
     if verbose
-        printfmtln(format_print_head, "Iteration", "Upper bound", "Current value", "Tol. [%]", "Benefit allocation")
+        printfmtln(format_print_head, "Iteration", "Upper bound", "Lower bound", "Tol. [%]", "Benefit allocation")
     end
 
     while continue_while && iter <= max_iter
@@ -810,7 +810,7 @@ function specific_in_core(
             benefit_distribution = string(current_profit_dist.data)
 
             rel_tol = compute_relative_tol(lower_problem_min_surplus, 0.0)
-            printfmtln(format_print_iter, iter, lower_problem_min_surplus, 0.0, rel_tol*100, benefit_distribution)
+            printfmtln(format_print_iter, iter, 0.0, lower_problem_min_surplus, rel_tol*100, benefit_distribution)
         end
     end
 
