@@ -172,6 +172,20 @@ function least_core(
         if isapprox(value_min_surplus, lower_problem_min_surplus, rtol=rtol, atol=atol, norm=abs)
             # convergence reached
             continue_while = false
+
+            # data of the iteration
+            iter_data = (
+                iteration=iter,
+                current_profit=current_profit_dist,
+                worst_coal_status=output_data[1].least_profitable_coalition_status,
+                benefit_coal=output_data[1].coalition_benefit,
+                value_min_surplus=value_min_surplus,
+                lower_problem_min_surplus=lower_problem_min_surplus,
+                constraint=nothing,
+            )
+    
+            # add the iteration to the history
+            push!(history, iter_data)
         else
             # convergence not reached: add new constraint
 
@@ -405,6 +419,20 @@ function specific_least_core(
         if isapprox(lower_problem_min_surplus, min_surplus, rtol=rtol, atol=atol, norm=abs)
             # convergence reached
             continue_while = false
+
+            # data of the iteration
+            iter_data = (
+                iteration=iter,
+                current_profit=current_profit_dist,
+                worst_coal_status=output_data[1].least_profitable_coalition_status,
+                benefit_coal=output_data[1].coalition_benefit,
+                value_min_surplus=min_surplus,
+                lower_problem_min_surplus=lower_problem_min_surplus,
+                constraint=nothing,
+            )
+    
+            # add the iteration to the history
+            push!(history, iter_data)
         else
 
             if use_start_value
@@ -763,6 +791,20 @@ function specific_in_core(
         if lower_problem_min_surplus * (1+rtol) + atol >= 0
             # convergence reached
             continue_while = false
+
+            # data of the iteration
+            iter_data = (
+                iteration=iter,
+                current_profit=current_profit_dist,
+                worst_coal_status=output_data[1].least_profitable_coalition_status,
+                benefit_coal=output_data[1].coalition_benefit,
+                value_min_surplus=0.0,
+                lower_problem_min_surplus=lower_problem_min_surplus,
+                constraint=nothing,
+            )
+    
+            # add the iteration to the history
+            push!(history, iter_data)
         else
             # convergence not reached: add new constraint
 
