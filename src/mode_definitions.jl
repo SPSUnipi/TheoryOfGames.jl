@@ -12,8 +12,8 @@ struct EnumMode <: AbstractCalcMode  # Enumerative technique
         return new(player_set_, utilities_)
     end
 
-    function EnumMode(player_set::Union{Set, Vector}, utility::Function; verbose=true)
-        return new(player_set, utility_combs(player_set, utility; verbose=verbose))
+    function EnumMode(player_set::Union{Set, Vector}, utility::Function; verbose=true, kwargs...)
+        return new(player_set, utility_combs(player_set, utility; verbose=verbose, kwargs...))
     end
 
     function EnumMode(input_file::String)

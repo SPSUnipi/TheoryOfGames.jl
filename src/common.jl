@@ -31,13 +31,15 @@ utility : Function
     It shall be a function utility(::Vector)::T<:Number
 verbose : Bool
     When true, it shows a progress bar to describe the current execution status
+parallel : Bool
+    When true, paralleling is used to compute operations
 
 Outputs
 -------
 utilities : Dict
     Dictionary that specifies the utility of each combination of coalition in player_set
 """
-function utility_combs(player_set, utility::Function; verbose=true)
+function utility_combs(player_set, utility::Function; verbose=true, parallel=false, kwargs...)
 
     # get types of player_set and utility output
     empty_coalition = empty_set(player_set)
@@ -57,12 +59,14 @@ function utility_combs(player_set, utility::Function; verbose=true)
     # number of combinations
     n_combs = number_coalitions(player_set)
 
-    if verbose
-        for comb in ProgressBar(Set.(combs), total=n_combs)
+    set_for = (verbose ? ProgressBar(Set.(combs), total=n_combs) : Set.(combs))
+
+    if parallel
+        Threads.@threads for comb in set_for
             dict_ret[comb] = utility(comb)
         end
     else
-        for comb in Set.(combs)
+        for comb in set_for
             dict_ret[comb] = utility(comb)
         end
     end

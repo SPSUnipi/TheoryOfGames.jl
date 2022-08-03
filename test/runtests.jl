@@ -78,6 +78,11 @@ example_list = [
     Examples.three_users_mapping,
 ]
 
+@testset "Parallel enum mode" begin
+    example = Examples.three_users_mapping
+    EnumMode(example.player_set, example.utility; parallel=true)
+end
+
 
 @testset "Game tests - EnumMode" begin
 
