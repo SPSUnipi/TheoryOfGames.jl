@@ -73,6 +73,10 @@ function least_core(
         best_objective_stop_factor=0.95,
     )
 
+    if !isnothing(best_objective_stop_option) && exclude_visited_coalitions
+        println("WARNING: BestObjStop enabled alongside exclude_visited_coalitions. This may lead to infinite loops")
+    end
+
     player_set = mode.player_set
     callback_worst_coalition = mode.callback_worst_coalition
     callback_benefit_by_coalition = mode.callback_benefit_by_coalition
@@ -347,6 +351,10 @@ function specific_least_core(
         best_objective_stop_factor=0.95,
         kwargs...
     )
+
+    if !isnothing(best_objective_stop_option) && exclude_visited_coalitions
+        println("WARNING: BestObjStop enabled alongside exclude_visited_coalitions. This may lead to infinite loops")
+    end
 
     if verbose
         println("PHASE 1: Start first least core analysis\n")
@@ -721,6 +729,10 @@ function specific_in_core(
         best_objective_stop_value=-0.01,
         kwargs...
     )
+
+    if !isnothing(best_objective_stop_option) && exclude_visited_coalitions
+        println("WARNING: BestObjStop enabled alongside exclude_visited_coalitions. This may lead to infinite loops")
+    end
 
     player_set = mode.player_set
     callback_worst_coalition = mode.callback_worst_coalition
