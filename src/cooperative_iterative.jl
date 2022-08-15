@@ -199,6 +199,8 @@ function least_core(
                 least_profitable_coalition_status = row.least_profitable_coalition_status
                 least_profitable_coalition = Set(row.least_profitable_coalition)
 
+                con_it = nothing
+
                 if !exclude_visited_coalitions || least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
@@ -211,21 +213,21 @@ function least_core(
                             least_profitable_coalition_status[pl] * profit_dist[pl] for pl in player_set
                         ]) >= row.coalition_benefit + min_surplus
                     )
-
-                    # data of the iteration
-                    iter_data = (
-                        iteration=iter,
-                        current_profit=current_profit_dist,
-                        worst_coal_status=least_profitable_coalition_status,
-                        benefit_coal=row.coalition_benefit,
-                        value_min_surplus=value_min_surplus,
-                        lower_problem_min_surplus=lower_problem_min_surplus,
-                        constraint=con_it,
-                    )
-            
-                    # add the iteration to the history
-                    push!(history, iter_data)
                 end
+
+                # data of the iteration
+                iter_data = (
+                    iteration=iter,
+                    current_profit=current_profit_dist,
+                    worst_coal_status=least_profitable_coalition_status,
+                    benefit_coal=row.coalition_benefit,
+                    value_min_surplus=value_min_surplus,
+                    lower_problem_min_surplus=lower_problem_min_surplus,
+                    constraint=con_it,
+                )
+        
+                # add the iteration to the history
+                push!(history, iter_data)
             end
 
             if use_start_value
@@ -445,6 +447,8 @@ function specific_least_core(
                 least_profitable_coalition_status = row.least_profitable_coalition_status
                 least_profitable_coalition = Set(row.least_profitable_coalition)
 
+                con_it = nothing
+
                 if !exclude_visited_coalitions || least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
@@ -458,21 +462,21 @@ function specific_least_core(
                             for pl in player_set
                         ]) >= row.coalition_benefit + model_dist[:min_surplus]
                     )
-
-                    # data of the iteration
-                    iter_data = (
-                        iteration=iter,
-                        current_profit=current_profit_dist,
-                        worst_coal_status=least_profitable_coalition_status,
-                        benefit_coal=row.coalition_benefit,
-                        value_min_surplus=min_surplus,
-                        lower_problem_min_surplus=lower_problem_min_surplus,
-                        constraint=con_it,
-                    )
-            
-                    # add the iteration to the history
-                    push!(history, iter_data)
                 end
+
+                # data of the iteration
+                iter_data = (
+                    iteration=iter,
+                    current_profit=current_profit_dist,
+                    worst_coal_status=least_profitable_coalition_status,
+                    benefit_coal=row.coalition_benefit,
+                    value_min_surplus=min_surplus,
+                    lower_problem_min_surplus=lower_problem_min_surplus,
+                    constraint=con_it,
+                )
+        
+                # add the iteration to the history
+                push!(history, iter_data)
             end
 
             if use_start_value
@@ -824,6 +828,8 @@ function specific_in_core(
                 # turn looping ongoing to false if all solutions have already been visited
                 looping_ongoing &= (least_profitable_coalition ∈ visited_coalitions)
 
+                con_it = nothing
+
                 if !exclude_visited_coalitions || least_profitable_coalition ∉ visited_coalitions
 
                     # update visited_coalitions
@@ -837,21 +843,21 @@ function specific_in_core(
                             for pl in player_set
                         ]) >= row.coalition_benefit # + 0.0 # set 0.0 to make it belong to the core
                     )
-
-                    # data of the iteration
-                    iter_data = (
-                        iteration=iter,
-                        current_profit=current_profit_dist,
-                        worst_coal_status=least_profitable_coalition_status,
-                        benefit_coal=row.coalition_benefit,
-                        value_min_surplus=0.0,
-                        lower_problem_min_surplus=lower_problem_min_surplus,
-                        constraint=con_it,
-                    )
-            
-                    # add the iteration to the history
-                    push!(history, iter_data)
                 end
+
+                # data of the iteration
+                iter_data = (
+                    iteration=iter,
+                    current_profit=current_profit_dist,
+                    worst_coal_status=least_profitable_coalition_status,
+                    benefit_coal=row.coalition_benefit,
+                    value_min_surplus=0.0,
+                    lower_problem_min_surplus=lower_problem_min_surplus,
+                    constraint=con_it,
+                )
+        
+                # add the iteration to the history
+                push!(history, iter_data)
             end
 
             if use_start_value
