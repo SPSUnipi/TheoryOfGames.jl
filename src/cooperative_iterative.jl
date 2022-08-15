@@ -126,6 +126,7 @@ function least_core(
 
     # visited coalitions
     visited_coalitions = [Set.(preload_coalitions); Set(player_set); Set([])]
+    looping_ongoing = false  # true when the iterative algorithm is looping on the same solution
 
     # printing formats
     format_print_head = "{:<15s} {:<15s} {:<15s} {:<15s} {:<s}"  # for the header
@@ -153,8 +154,12 @@ function least_core(
         # update best objective stop if applicable
         modify_solver_options = []
         if !isnothing(best_objective_stop_option)
-            best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor - 1e-3
-            push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
+            if looping_ongoing
+                println("Looping identified on the same solution, skipped option $best_objective_stop_option")
+            else
+                best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor - 1e-3
+                push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
+            end
         end
 
         # get a vector in which each row contains a named tuple with:
@@ -189,6 +194,9 @@ function least_core(
         else
             # convergence not reached: add new constraint
 
+            # initialize to true and if at least a solution is included, then set it to false
+            looping_ongoing = true
+
             if use_start_value
                 # set initial start value
                 value_start = value.(all_variables(model_dist))
@@ -198,6 +206,9 @@ function least_core(
 
                 least_profitable_coalition_status = row.least_profitable_coalition_status
                 least_profitable_coalition = Set(row.least_profitable_coalition)
+
+                # turn looping ongoing to false if all solutions have already been visited
+                looping_ongoing &= (least_profitable_coalition ∈ visited_coalitions)
 
                 con_it = nothing
 
@@ -387,6 +398,7 @@ function specific_least_core(
 
     # initialize variable
     current_profit_dist = nothing
+    looping_ongoing = false  # true when the iterative algorithm is looping on the same solution
 
     while continue_while && iter <= max_iter
 
@@ -402,8 +414,12 @@ function specific_least_core(
         # update best objective stop if applicable
         modify_solver_options = []
         if !isnothing(best_objective_stop_option)
-            best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_factor - 1e-3
-            push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
+            if looping_ongoing
+                println("Looping identified on the same solution, skipped option $best_objective_stop_option")
+            else
+                best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_factor - 1e-3
+                push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
+            end
         end
 
         # get a vector in which each row contains a named tuple with:
@@ -437,6 +453,9 @@ function specific_least_core(
             push!(history, iter_data)
         else
 
+            # initialize to true and if at least a solution is included, then set it to false
+            looping_ongoing = true
+
             if use_start_value
                 # set initial start value
                 value_start = value.(all_variables(model_dist))
@@ -446,6 +465,9 @@ function specific_least_core(
 
                 least_profitable_coalition_status = row.least_profitable_coalition_status
                 least_profitable_coalition = Set(row.least_profitable_coalition)
+
+                # turn looping ongoing to false if all solutions have already been visited
+                looping_ongoing &= (least_profitable_coalition ∈ visited_coalitions)
 
                 con_it = nothing
 
@@ -812,13 +834,13 @@ function specific_in_core(
         else
             # convergence not reached: add new constraint
 
+            # initialize to true and if at least a solution is included, then set it to false
+            looping_ongoing = true
+
             if use_start_value
                 # set initial start value
                 value_start = value.(all_variables(model_dist))
             end
-
-            # initialize to true and if at least a solution is included, then set it to false
-            looping_ongoing = true
 
             for row in output_data
 
