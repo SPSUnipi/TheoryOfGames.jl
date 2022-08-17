@@ -15,21 +15,30 @@ include("tests.jl")
 "Function to create EnumMode out of an example"
 to_EnumMode(example) = EnumMode(example.player_set, example.utility)
 
+"Function to create IterMode out of an example"
 function to_IterMode(example)
     util_combs = utility_combs(example.player_set, example.utility)
     keys_no_grand_coalition = setdiff(keys(util_combs), [Set(), Set(example.player_set)])
 
-    let util_combs=util_combs, keys_no_grand_coalition=keys_no_grand_coalition
+    let  player_set=example.player_set, util_combs=util_combs, keys_no_grand_coalition=keys_no_grand_coalition
         
         callback_benefit_by_coalition = (coal)->util_combs[Set(coal)]
 
-        function callback_worst_coalition(profit_dist)
+        function callback_worst_coalition(profit_dist; kwargs...)
             min_surplus_combs = Dict(
                 comb=>sum(Float64[profit_dist[c] for c in comb]) - util_combs[Set(comb)]
                 for comb in keys_no_grand_coalition
             )
             min_surplus, least_benefit_coal = findmin(min_surplus_combs)
-            return least_benefit_coal, util_combs[Set(least_benefit_coal)], min_surplus
+            return [(
+                least_profitable_coalition_status=JuMP.Containers.DenseAxisArray(
+                    [pl in least_benefit_coal ? 1.0 : 0.0 for pl in player_set],
+                    player_set,
+                ),
+                least_profitable_coalition=least_benefit_coal,
+                coalition_benefit=util_combs[Set(least_benefit_coal)],
+                min_surplus=min_surplus,
+            )]
         end
 
         return Games.IterMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
@@ -65,9 +74,11 @@ enum_mode = Games.EnumMode(example.player_set, example.utility)
 # a = ref_in_core(mode, ref_dist, optimizer)
 
 mode_iter = to_IterMode(example)
-mode_enum = to_EnumMode(example)
+# mode_enum = to_EnumMode(example)
 
-nucleolus(mode_enum, optimizer)
+# nucleolus(mode_enum, optimizer)
+
+profit_distribution, min_surplus, history = least_core(mode_iter, optimizer, raw_outputs=true)
 
 #specific_least_core_dist_enum, min_surplus_enum, model_dist_enum = var_least_core(mode_enum, optimizer; raw_outputs=true)
 #profit_distribution, min_surplus, history, model_dist = in_core(mode_iter, optimizer; raw_outputs=true)
