@@ -16,6 +16,8 @@ mode : IterMode
     callback_worst_coalition accepts one argument (current profit sharing)
 optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
+start_time : (optional, default nothing)
+    Specify the initial time of the method; if nothing the value is initialized by time()
 rtol : Number (optional, default 1e-6)
     Relative tolerance of the convergence process
 atol : Number (optional, default 1e-6)
@@ -59,6 +61,7 @@ history
 function least_core(
         mode::IterMode,
         optimizer;
+        start_time=nothing,
         rtol=1e-6,
         atol=1e-6, 
         lower_bound=nothing,
@@ -75,6 +78,10 @@ function least_core(
 
     if !isnothing(best_objective_stop_option) && exclude_visited_coalitions
         println("WARNING: BestObjStop enabled alongside exclude_visited_coalitions. This may lead to infinite loops")
+    end
+
+    if isnothing(start_time)
+        start_time = time()
     end
 
     player_set = mode.player_set
@@ -121,7 +128,16 @@ function least_core(
     lower_problem_min_surplus = lower_bound
 
     # list of constraints
-    history = NamedTuple[]
+    history = NamedTuple[(
+        iteration=0,
+        time=time() - start_time,
+        current_profit=NaN,
+        worst_coal_status=nothing,
+        benefit_coal=NaN,
+        value_min_surplus=upper_bound,
+        lower_problem_min_surplus=lower_bound,
+        constraint=preloaded_coalitions,
+    )]
 
     # initialization while condition
     continue_while = true
@@ -185,6 +201,7 @@ function least_core(
             # data of the iteration
             iter_data = (
                 iteration=iter,
+                time=time()-start_time,
                 current_profit=current_profit_dist,
                 worst_coal_status=output_data[1].least_profitable_coalition_status,
                 benefit_coal=output_data[1].coalition_benefit,
@@ -233,6 +250,7 @@ function least_core(
                 # data of the iteration
                 iter_data = (
                     iteration=iter,
+                    time=time()-start_time,
                     current_profit=current_profit_dist,
                     worst_coal_status=least_profitable_coalition_status,
                     benefit_coal=row.coalition_benefit,
@@ -297,6 +315,8 @@ dist_objective : Function
     JuMP @NLobjective or @objective commands
 optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
+start_time : (optional, default nothing)
+    Specify the initial time of the method; if nothing the value is initialized by time()
 rtol : Number (optional, default 1e-6)
     Relative tolerance of the convergence process
 atol : Number (optional, default 1e-6)
@@ -338,6 +358,7 @@ function specific_least_core(
         mode::IterMode,
         dist_objective::Function,
         optimizer;
+        start_time=nothing,
         rtol=1e-6,
         atol=1e-6, 
         lower_bound=nothing,
@@ -356,12 +377,17 @@ function specific_least_core(
         println("WARNING: BestObjStop enabled alongside exclude_visited_coalitions. This may lead to infinite loops")
     end
 
+    if isnothing(start_time)
+        start_time = time()
+    end
+
     if verbose
         println("PHASE 1: Start first least core analysis\n")
     end
 
     profit_distribution, min_surplus, history, visited_coalitions, model_dist = least_core(
         mode, optimizer;
+        start_time=start_time,
         rtol=rtol,
         atol=atol,
         lower_bound=lower_bound,
@@ -449,6 +475,7 @@ function specific_least_core(
             # data of the iteration
             iter_data = (
                 iteration=iter,
+                time=time() - start_time,
                 current_profit=current_profit_dist,
                 worst_coal_status=output_data[1].least_profitable_coalition_status,
                 benefit_coal=output_data[1].coalition_benefit,
@@ -497,6 +524,7 @@ function specific_least_core(
                 # data of the iteration
                 iter_data = (
                     iteration=iter,
+                    time=time() - start_time,
                     current_profit=current_profit_dist,
                     worst_coal_status=least_profitable_coalition_status,
                     benefit_coal=row.coalition_benefit,
@@ -670,6 +698,8 @@ dist_objective : Function
     commands
 optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
+start_time : (optional, default nothing)
+    Specify the initial time of the method; if nothing the value is initialized by time()
 rtol : Number (optional, default 1e-6)
     Relative tolerance of the convergence process
 atol : Number (optional, default 1e-6)
@@ -715,6 +745,7 @@ function specific_in_core(
         mode::IterMode,
         dist_objective::Function,
         optimizer;
+        start_time=nothing,
         rtol=1e-6,
         atol=1e-6, 
         lower_bound=nothing,
@@ -732,6 +763,10 @@ function specific_in_core(
 
     if !isnothing(best_objective_stop_option) && exclude_visited_coalitions
         println("WARNING: BestObjStop enabled alongside exclude_visited_coalitions. This may lead to infinite loops")
+    end
+
+    if isnothing(start_time)
+        start_time = time()
     end
 
     player_set = mode.player_set
@@ -775,7 +810,16 @@ function specific_in_core(
     lower_problem_min_surplus = lower_bound
 
     # list of constraints
-    history = NamedTuple[]
+    history = NamedTuple[(
+        iteration=0,
+        time=time() - start_time,
+        current_profit=NaN,
+        worst_coal_status=nothing,
+        benefit_coal=NaN,
+        value_min_surplus=0.0,
+        lower_problem_min_surplus=NaN,
+        constraint=preloaded_coalitions,
+    )]
 
     # initialization while condition
     continue_while = true
@@ -833,6 +877,7 @@ function specific_in_core(
             # data of the iteration
             iter_data = (
                 iteration=iter,
+                time=time() - start_time,
                 current_profit=current_profit_dist,
                 worst_coal_status=output_data[1].least_profitable_coalition_status,
                 benefit_coal=output_data[1].coalition_benefit,
@@ -882,6 +927,7 @@ function specific_in_core(
                 # data of the iteration
                 iter_data = (
                     iteration=iter,
+                    time=time() - start_time,
                     current_profit=current_profit_dist,
                     worst_coal_status=least_profitable_coalition_status,
                     benefit_coal=row.coalition_benefit,
