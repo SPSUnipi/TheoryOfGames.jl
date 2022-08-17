@@ -131,7 +131,7 @@ function least_core(
     history = NamedTuple[(
         iteration=0,
         time=time() - start_time,
-        current_profit=NaN,
+        current_profit=nothing,
         worst_coal_status=nothing,
         benefit_coal=NaN,
         value_min_surplus=upper_bound,
@@ -813,7 +813,7 @@ function specific_in_core(
     history = NamedTuple[(
         iteration=0,
         time=time() - start_time,
-        current_profit=NaN,
+        current_profit=nothing,
         worst_coal_status=nothing,
         benefit_coal=NaN,
         value_min_surplus=0.0,
