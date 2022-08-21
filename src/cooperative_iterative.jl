@@ -121,7 +121,7 @@ function least_core(
     )
 
     if !isempty(preload_coalitions)
-        println("Preload $(length(preloaded_coalitions)) coalitions")
+        println("Preload $(length(preload_coalitions)) coalitions")
     end
 
     # initialization of the min_surplus of the inner problem
@@ -800,7 +800,7 @@ function specific_in_core(
     )
 
     if !isempty(preload_coalitions)
-        println("Preload $(length(preloaded_coalitions)) coalitions")
+        println("Preload $(length(preload_coalitions)) coalitions")
     end
 
     # specify function
