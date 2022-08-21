@@ -116,7 +116,7 @@ function least_core(
     @objective(model_dist, Max, min_surplus)
 
     # Add constraints for preloaded coalitions
-    @constraint(model_dist, [precoal in preload_coalitions],
+    precoal_constraint = @constraint(model_dist, [precoal in preload_coalitions],
         sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in precoal]) >= callback_benefit_by_coalition(precoal) + min_surplus
     )
 
@@ -136,7 +136,7 @@ function least_core(
         benefit_coal=NaN,
         value_min_surplus=upper_bound,
         lower_problem_min_surplus=lower_bound,
-        constraint=preloaded_coalitions,
+        constraint=precoal_constraint,
     )]
 
     # initialization while condition
@@ -795,7 +795,7 @@ function specific_in_core(
     @constraint(model_dist, con_total_benefit, sum(profit_dist) == benefit_grand_coalition)
 
     # Add constraints for preloaded coalitions
-    @constraint(model_dist, [precoal in preload_coalitions],
+    precoal_constraint = @constraint(model_dist, [precoal in preload_coalitions],
         sum(GenericAffExpr{Float64,VariableRef}[profit_dist[pl] for pl in precoal]) >= callback_benefit_by_coalition(precoal) # + 0.0 # set 0.0 to make it belong to the core
     )
 
@@ -818,7 +818,7 @@ function specific_in_core(
         benefit_coal=NaN,
         value_min_surplus=0.0,
         lower_problem_min_surplus=NaN,
-        constraint=preloaded_coalitions,
+        constraint=precoal_constraint,
     )]
 
     # initialization while condition
