@@ -81,3 +81,23 @@ Auxiliary function to compute the relative tolerance between two quantities x an
 
 """
 compute_relative_tol(x, y, norm=abs, atol=1e-6) = norm(x-y) / (atol + max(norm(x), norm(y)))
+
+
+"""
+    Auxiliary function to create history rows for iterative solving methods
+
+"""
+function _create_history_row(
+    iter, time, current_profit, worst_coal_status, benefit_coal, value_min_surplus, lower_problem_min_surplus, constraint
+)
+    return (
+        iteration=iter,
+        time=time,
+        current_profit=current_profit,
+        worst_coal_status=worst_coal_status,
+        benefit_coal=benefit_coal,
+        value_min_surplus=value_min_surplus,
+        lower_problem_min_surplus=lower_problem_min_surplus,
+        constraint=constraint,
+    )
+end

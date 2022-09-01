@@ -136,15 +136,15 @@ function least_core(
     lower_problem_min_surplus = lower_bound
 
     # list of constraints
-    history = NamedTuple[(
-        iteration=0,
-        time=time() - start_time,
-        current_profit=nothing,
-        worst_coal_status=nothing,
-        benefit_coal=NaN,
-        value_min_surplus=upper_bound,
-        lower_problem_min_surplus=lower_bound,
-        constraint=precoal_constraint,
+    history = NamedTuple[_create_history_row(
+        0,
+        time() - start_time,
+        nothing,
+        nothing,
+        NaN,
+        upper_bound,
+        lower_bound,
+        precoal_constraint,
     )]
 
     # initialization while condition
@@ -210,15 +210,15 @@ function least_core(
             continue_while = false
 
             # data of the iteration
-            iter_data = (
-                iteration=iter,
-                time=time()-start_time,
-                current_profit=current_profit_dist,
-                worst_coal_status=output_data[1].least_profitable_coalition_status,
-                benefit_coal=output_data[1].coalition_benefit,
-                value_min_surplus=value_min_surplus,
-                lower_problem_min_surplus=lower_problem_min_surplus,
-                constraint=nothing,
+            iter_data = _create_history_row(
+                iter,
+                time()-start_time,
+                current_profit_dist,
+                output_data[1].least_profitable_coalition_status,
+                output_data[1].coalition_benefit,
+                value_min_surplus,
+                lower_problem_min_surplus,
+                nothing,
             )
     
             # add the iteration to the history
@@ -259,15 +259,15 @@ function least_core(
                 end
 
                 # data of the iteration
-                iter_data = (
-                    iteration=iter,
-                    time=time()-start_time,
-                    current_profit=current_profit_dist,
-                    worst_coal_status=least_profitable_coalition_status,
-                    benefit_coal=row.coalition_benefit,
-                    value_min_surplus=value_min_surplus,
-                    lower_problem_min_surplus=lower_problem_min_surplus,
-                    constraint=con_it,
+                iter_data = _create_history_row(
+                    iter,
+                    time()-start_time,
+                    current_profit_dist,
+                    least_profitable_coalition_status,
+                    row.coalition_benefit,
+                    value_min_surplus,
+                    lower_problem_min_surplus,
+                    con_it,
                 )
         
                 # add the iteration to the history
@@ -495,15 +495,15 @@ function specific_least_core(
             continue_while = false
 
             # data of the iteration
-            iter_data = (
-                iteration=iter,
-                time=time() - start_time,
-                current_profit=current_profit_dist,
-                worst_coal_status=output_data[1].least_profitable_coalition_status,
-                benefit_coal=output_data[1].coalition_benefit,
-                value_min_surplus=min_surplus,
-                lower_problem_min_surplus=lower_problem_min_surplus,
-                constraint=nothing,
+            iter_data = _create_history_row(
+                iter,
+                time() - start_time,
+                current_profit_dist,
+                output_data[1].least_profitable_coalition_status,
+                output_data[1].coalition_benefit,
+                min_surplus,
+                lower_problem_min_surplus,
+                nothing,
             )
     
             # add the iteration to the history
@@ -544,15 +544,15 @@ function specific_least_core(
                 end
 
                 # data of the iteration
-                iter_data = (
-                    iteration=iter,
-                    time=time() - start_time,
-                    current_profit=current_profit_dist,
-                    worst_coal_status=least_profitable_coalition_status,
-                    benefit_coal=row.coalition_benefit,
-                    value_min_surplus=min_surplus,
-                    lower_problem_min_surplus=lower_problem_min_surplus,
-                    constraint=con_it,
+                iter_data = _create_history_row(
+                    iter,
+                    time() - start_time,
+                    current_profit_dist,
+                    least_profitable_coalition_status,
+                    row.coalition_benefit,
+                    min_surplus,
+                    lower_problem_min_surplus,
+                    con_it,
                 )
         
                 # add the iteration to the history
@@ -840,15 +840,15 @@ function specific_in_core(
     lower_problem_min_surplus = lower_bound
 
     # list of constraints
-    history = NamedTuple[(
-        iteration=0,
-        time=time() - start_time,
-        current_profit=nothing,
-        worst_coal_status=nothing,
-        benefit_coal=NaN,
-        value_min_surplus=0.0,
-        lower_problem_min_surplus=NaN,
-        constraint=precoal_constraint,
+    history = NamedTuple[_create_history_row(
+        0,
+        time() - start_time,
+        nothing,
+        nothing,
+        NaN,
+        0.0,
+        NaN,
+        precoal_constraint,
     )]
 
     # initialization while condition
@@ -908,15 +908,15 @@ function specific_in_core(
             continue_while = false
 
             # data of the iteration
-            iter_data = (
-                iteration=iter,
-                time=time() - start_time,
-                current_profit=current_profit_dist,
-                worst_coal_status=output_data[1].least_profitable_coalition_status,
-                benefit_coal=output_data[1].coalition_benefit,
-                value_min_surplus=0.0,
-                lower_problem_min_surplus=lower_problem_min_surplus,
-                constraint=nothing,
+            iter_data = _create_history_row(
+                iter,
+                time() - start_time,
+                current_profit_dist,
+                output_data[1].least_profitable_coalition_status,
+                output_data[1].coalition_benefit,
+                0.0,
+                lower_problem_min_surplus,
+                nothing,
             )
     
             # add the iteration to the history
@@ -958,15 +958,15 @@ function specific_in_core(
                 end
 
                 # data of the iteration
-                iter_data = (
-                    iteration=iter,
-                    time=time() - start_time,
-                    current_profit=current_profit_dist,
-                    worst_coal_status=least_profitable_coalition_status,
-                    benefit_coal=row.coalition_benefit,
-                    value_min_surplus=0.0,
-                    lower_problem_min_surplus=lower_problem_min_surplus,
-                    constraint=con_it,
+                iter_data = _create_history_row(
+                    iter,
+                    time() - start_time,
+                    current_profit_dist,
+                    least_profitable_coalition_status,
+                    row.coalition_benefit,
+                    0.0,
+                    lower_problem_min_surplus,
+                    con_it,
                 )
         
                 # add the iteration to the history
