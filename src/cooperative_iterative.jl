@@ -49,6 +49,12 @@ best_objective_stop_option : String (optional, default nothing)
     If gurobi is used, this option is BestObjStop
 best_objective_stop_factor : Number (optional, default 0.95)
     Factor used in the "best_objective_stop_option" approach
+lower_relaxation_stop_option : String (optional, default nothing)
+    Name of the option used to setup the stop criterion of the optimization as soon as
+    the lowest bound reaches the tolerance specified by tolerance_lower_relaxation_stop option
+tolerance_lower_relaxation_stop : double (optional, default 0.0)
+    When lower_relaxation_stop_option is enabled, this option specifies the tolerance used
+    to stop the loop
 
 Outputs
 ------
@@ -74,6 +80,8 @@ function least_core(
         exclude_visited_coalitions=true,
         best_objective_stop_option=nothing,
         best_objective_stop_factor=0.95,
+        lower_relaxation_stop_option=nothing,
+        tolerance_lower_relaxation_stop=0.0,
     )
 
     if !isnothing(best_objective_stop_option) && exclude_visited_coalitions
@@ -177,9 +185,12 @@ function least_core(
             if looping_ongoing
                 println("Looping identified on the same solution, skipped option $best_objective_stop_option")
             else
-                best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor - 1e-3
+                best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor * (1+rtol) - atol
                 push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
             end
+        end
+        if !isnothing(lower_relaxation_stop_option)
+            push!(modify_solver_options, string(lower_relaxation_stop_option)=>best_obj_stop * (1 - tolerance_lower_relaxation_stop))
         end
 
         # get a vector in which each row contains a named tuple with:
@@ -345,6 +356,12 @@ best_objective_stop_option : String (optional, default nothing)
     If gurobi is used, this option is BestObjStop
 best_objective_stop_factor : Number (optional, default 0.95)
     Factor used in the "best_objective_stop_option" approach
+lower_relaxation_stop_option : String (optional, default nothing)
+    Name of the option used to setup the stop criterion of the optimization as soon as
+    the lowest bound reaches the tolerance specified by tolerance_lower_relaxation_stop option
+tolerance_lower_relaxation_stop : double (optional, default 0.0)
+    When lower_relaxation_stop_option is enabled, this option specifies the tolerance used
+    to stop the loop
 
 Outputs
 ------
@@ -370,6 +387,8 @@ function specific_least_core(
         exclude_visited_coalitions=true,
         best_objective_stop_option=nothing,
         best_objective_stop_factor=0.95,
+        lower_relaxation_stop_option=nothing,
+        tolerance_lower_relaxation_stop=0.0,
         kwargs...
     )
 
@@ -451,9 +470,12 @@ function specific_least_core(
             if looping_ongoing
                 println("Looping identified on the same solution, skipped option $best_objective_stop_option")
             else
-                best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_factor - 1e-3
+                best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_factor * (1+rtol) - atol
                 push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
             end
+        end
+        if !isnothing(lower_relaxation_stop_option)
+            push!(modify_solver_options, string(lower_relaxation_stop_option)=>best_obj_stop * (1 - tolerance_lower_relaxation_stop))
         end
 
         # get a vector in which each row contains a named tuple with:
@@ -731,7 +753,13 @@ best_objective_stop_option : String (optional, default nothing)
     If gurobi is used, this option is BestObjStop
 best_objective_stop_value : Number (optional, default -0.01)
     Minimum objective function used for the solver to converge
-    When the procedure starts looping 
+    When the procedure starts looping
+lower_relaxation_stop_option : String (optional, default nothing)
+    Name of the option used to setup the stop criterion of the optimization as soon as
+    the lowest bound reaches the tolerance specified by tolerance_lower_relaxation_stop option
+tolerance_lower_relaxation_stop : double (optional, default 0.0)
+    When lower_relaxation_stop_option is enabled, this option specifies the tolerance used
+    to stop the loop
 
 Outputs
 ------
@@ -758,6 +786,8 @@ function specific_in_core(
         exclude_visited_coalitions=true,
         best_objective_stop_option=nothing,
         best_objective_stop_value=-0.01,
+        lower_relaxation_stop_option=nothing,
+        tolerance_lower_relaxation_stop=0.0,
         kwargs...
     )
 
@@ -855,6 +885,9 @@ function specific_in_core(
             else
                 push!(modify_solver_options, string(best_objective_stop_option)=>best_objective_stop_value)
             end
+        end
+        if !isnothing(lower_relaxation_stop_option)
+            push!(modify_solver_options, string(lower_relaxation_stop_option)=>best_obj_stop * (1 - tolerance_lower_relaxation_stop))
         end
         
         # get a vector in which each row contains a named tuple with:
