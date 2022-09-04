@@ -190,7 +190,7 @@ function least_core(
             end
         end
         if !isnothing(lower_relaxation_stop_option)
-            push!(modify_solver_options, string(lower_relaxation_stop_option)=>min_surplus - abs(min_surplus) * tolerance_lower_relaxation_stop)
+            push!(modify_solver_options, string(lower_relaxation_stop_option)=>value_min_surplus - abs(value_min_surplus) * tolerance_lower_relaxation_stop)
         end
 
         # get a vector in which each row contains a named tuple with:
@@ -887,7 +887,7 @@ function specific_in_core(
             end
         end
         if !isnothing(lower_relaxation_stop_option)
-            push!(modify_solver_options, string(lower_relaxation_stop_option)=>min_surplus - abs(min_surplus) * tolerance_lower_relaxation_stop)
+            push!(modify_solver_options, string(lower_relaxation_stop_option)=>0.0)
         end
         
         # get a vector in which each row contains a named tuple with:
