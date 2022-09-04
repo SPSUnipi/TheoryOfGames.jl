@@ -415,7 +415,7 @@ function specific_least_core(
         raw_outputs=true,
         max_iter=max_iter,
         exclude_visited_coalitions=exclude_visited_coalitions,
-        best_objective_stop_option=best_objective_stop_option,
+        lower_relaxation_stop_option=lower_relaxation_stop_option,
         best_objective_stop_factor=best_objective_stop_factor,
         kwargs...
     )
