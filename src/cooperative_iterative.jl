@@ -45,10 +45,10 @@ best_objective_stop_option : String (optional, default nothing)
     When this option is non-nothing, in every iteration, a minimum convergence criterion is added
     so to stop the lower problem as soon as a minimum fesible objective function is reached.
     This minimum objective value is obtained with respect to the solution of the master problem
-    multiplied by the factor "best_objective_stop_factor"
+    multiplied by the factor "best_objective_stop_tolerance"
     If gurobi is used, this option is BestObjStop
-best_objective_stop_factor : Number (optional, default 0.95)
-    Factor used in the "best_objective_stop_option" approach
+best_objective_stop_tolerance : Number (optional, default 0.05)
+    Tolerance used in the "best_objective_stop_option" approach
 lower_relaxation_stop_option : String (optional, default nothing)
     Name of the option used to setup the stop criterion of the optimization as soon as
     the lowest bound reaches the tolerance specified by tolerance_lower_relaxation_stop option
@@ -79,7 +79,7 @@ function least_core(
         preload_coalitions=[],
         exclude_visited_coalitions=true,
         best_objective_stop_option=nothing,
-        best_objective_stop_factor=0.95,
+        best_objective_stop_tolerance=0.05,
         lower_relaxation_stop_option=nothing,
         tolerance_lower_relaxation_stop=0.0,
     )
@@ -185,7 +185,7 @@ function least_core(
             if looping_ongoing
                 println("Looping identified on the same solution, skipped option $best_objective_stop_option")
             else
-                best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_factor * (1+rtol) - atol
+                best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_tolerance * (1+rtol) - atol
                 push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
             end
         end
@@ -352,10 +352,10 @@ best_objective_stop_option : String (optional, default nothing)
     When this option is non-nothing, in every iteration, a minimum convergence criterion is added
     so to stop the lower problem as soon as a minimum fesible objective function is reached.
     This minimum objective value is obtained with respect to the solution of the master problem
-    multiplied by the factor "best_objective_stop_factor"
+    multiplied by the factor "best_objective_stop_tolerance"
     If gurobi is used, this option is BestObjStop
-best_objective_stop_factor : Number (optional, default 0.95)
-    Factor used in the "best_objective_stop_option" approach
+best_objective_stop_tolerance : Number (optional, default 0.05)
+    Tolerance used in the "best_objective_stop_option" approach
 lower_relaxation_stop_option : String (optional, default nothing)
     Name of the option used to setup the stop criterion of the optimization as soon as
     the lowest bound reaches the tolerance specified by tolerance_lower_relaxation_stop option
@@ -386,7 +386,7 @@ function specific_least_core(
         max_iter=100,
         exclude_visited_coalitions=true,
         best_objective_stop_option=nothing,
-        best_objective_stop_factor=0.95,
+        best_objective_stop_tolerance=0.05,
         lower_relaxation_stop_option=nothing,
         tolerance_lower_relaxation_stop=0.0,
         kwargs...
@@ -417,7 +417,7 @@ function specific_least_core(
         exclude_visited_coalitions=exclude_visited_coalitions,
         lower_relaxation_stop_option=lower_relaxation_stop_option,
         best_objective_stop_option=best_objective_stop_option,
-        best_objective_stop_factor=best_objective_stop_factor,
+        best_objective_stop_tolerance=best_objective_stop_tolerance,
         kwargs...
     )
     
@@ -471,7 +471,7 @@ function specific_least_core(
             if looping_ongoing
                 println("Looping identified on the same solution, skipped option $best_objective_stop_option")
             else
-                best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_factor * (1+rtol) - atol
+                best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_tolerance * (1+rtol) - atol
                 push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
             end
         end
