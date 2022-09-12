@@ -92,7 +92,7 @@ function _create_history_row(
 )
     return (
         iteration=iter,
-        time=time,
+        elapsed_time=time,
         current_profit=current_profit,
         worst_coal_status=worst_coal_status,
         benefit_coal=benefit_coal,
