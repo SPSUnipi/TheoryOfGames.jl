@@ -18,9 +18,9 @@ optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
 start_time : (optional, default nothing)
     Specify the initial time of the method; if nothing the value is initialized by time()
-rtol : Number (optional, default 1e-6)
+rtol : Number (optional, default 1e-2)
     Relative tolerance of the convergence process
-atol : Number (optional, default 1e-6)
+atol : Number (optional, default 1e-2)
     Absolute tolerance of the convergence process
 lower_bound : Number (optional, default nothing)
     Lower bound of the variables of the problem (benefit distribution and margin of the worst coalition)
@@ -68,8 +68,8 @@ function least_core(
         mode::IterMode,
         optimizer;
         start_time=nothing,
-        rtol=1e-6,
-        atol=1e-6, 
+        rtol=1e-2,
+        atol=1e-2, 
         lower_bound=nothing,
         upper_bound=nothing,
         verbose=true,
@@ -328,9 +328,9 @@ optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
 start_time : (optional, default nothing)
     Specify the initial time of the method; if nothing the value is initialized by time()
-rtol : Number (optional, default 1e-6)
+rtol : Number (optional, default 1e-2)
     Relative tolerance of the convergence process
-atol : Number (optional, default 1e-6)
+atol : Number (optional, default 1e-2)
     Absolute tolerance of the convergence process
 lower_bound : Number (optional, default nothing)
     Lower bound of the variables of the problem (benefit distribution and margin of the worst coalition)
@@ -376,8 +376,8 @@ function specific_least_core(
         dist_objective::Function,
         optimizer;
         start_time=nothing,
-        rtol=1e-6,
-        atol=1e-6, 
+        rtol=1e-2,
+        atol=1e-2, 
         lower_bound=nothing,
         upper_bound=nothing,
         verbose=true,
@@ -723,9 +723,9 @@ optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
 start_time : (optional, default nothing)
     Specify the initial time of the method; if nothing the value is initialized by time()
-rtol : Number (optional, default 1e-6)
+rtol : Number (optional, default 1e-2)
     Relative tolerance of the convergence process
-atol : Number (optional, default 1e-6)
+atol : Number (optional, default 1e-2)
     Absolute tolerance of the convergence process
 lower_bound : Number (optional, default nothing)
     Lower bound of the variables of the problem (benefit distribution and margin of the worst coalition)
@@ -775,8 +775,8 @@ function specific_in_core(
         dist_objective::Function,
         optimizer;
         start_time=nothing,
-        rtol=1e-6,
-        atol=1e-6, 
+        rtol=1e-2,
+        atol=1e-2, 
         lower_bound=nothing,
         upper_bound=nothing,
         verbose=true,
@@ -1159,8 +1159,8 @@ function verify_in_core(
         profit_dist, 
         mode::IterMode,
         optimizer; 
-        rtol=1e-6,
-        atol=1e-6,
+        rtol=1e-2,
+        atol=1e-2,
         kwargs...
     )
     
