@@ -422,6 +422,7 @@ function specific_least_core(
         lower_relaxation_stop_option=lower_relaxation_stop_option,
         best_objective_stop_option=best_objective_stop_option,
         best_objective_stop_tolerance=best_objective_stop_tolerance,
+        tolerance_lower_relaxation_stop=tolerance_lower_relaxation_stop,
         kwargs...
     )
     
