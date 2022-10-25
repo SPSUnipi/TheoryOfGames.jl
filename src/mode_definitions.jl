@@ -44,6 +44,14 @@ callback_benefit_by_coalition : Function
 callback_worst_coalition : Function
     Callback function that is used to determine what is the coalition with the worst benefit
     and the total benefit of the coalition.
+    Arguments shall be:
+    - (mandatory) a Dict-like container to describe the current reward distribution by user
+    - kwargs (optional):
+        - modify_solver_options: vector of pairs to iteratively change the optimization callback
+            to speed up computation time. The implemented callbacks are:
+            1. best_obj_stop: when the best_obj_stop callback is used in iterative methods,
+                the corresponding option is updated here depending on the value
+            2. lower_relaxation_stop_option: option to stop the execution as a lower bound is reached
     The function shall return a Vector of NamedTuple, where for every entry o shall contain:
     - least_profitable_coalition: members of the worst coalition, for result o
     - coalition_benefit: benefit of the coalition, for result o

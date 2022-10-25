@@ -199,7 +199,11 @@ function least_core(
         # (2) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
         # (3) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
         # (4) the minimum surplus of that coalition [min_surplus]
-        output_data = callback_worst_coalition(current_profit_dist; modify_solver_options=modify_solver_options)
+        output_data = callback_worst_coalition(
+            current_profit_dist;
+            modify_solver_options=modify_solver_options,
+            decompose_ANC_lower_obj_stop=value_min_surplus,
+        )
 
         # get the minimum surplus of the iteration
         lower_problem_min_surplus = output_data[1].min_surplus
@@ -485,7 +489,11 @@ function specific_least_core(
         # (2) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
         # (3) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
         # (4) the minimum surplus of that coalition [min_surplus]
-        output_data = callback_worst_coalition(current_profit_dist; modify_solver_options=modify_solver_options)
+        output_data = callback_worst_coalition(
+            current_profit_dist;
+            modify_solver_options=modify_solver_options,
+            decompose_ANC_lower_obj_stop=min_surplus,
+        )
 
         # get the minimum surplus of the iteration
         lower_problem_min_surplus = output_data[1].min_surplus
@@ -897,7 +905,11 @@ function specific_in_core(
         # (2) the coalition (worst_coal_set) with the least benefit [least_profitable_coalition],
         # (3) the total benefit of that coalition (worst_coal_benefit) [coalition_benefit], and
         # (4) the minimum surplus of that coalition [min_surplus]
-        output_data = callback_worst_coalition(current_profit_dist; modify_solver_options=modify_solver_options)
+        output_data = callback_worst_coalition(
+            current_profit_dist;
+            modify_solver_options=modify_solver_options,
+            decompose_ANC_lower_obj_stop=value_min_surplus,
+        )
 
         # get the minimum surplus of the iteration
         lower_problem_min_surplus = output_data[1].min_surplus
