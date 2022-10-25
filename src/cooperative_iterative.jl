@@ -908,7 +908,7 @@ function specific_in_core(
         output_data = callback_worst_coalition(
             current_profit_dist;
             modify_solver_options=modify_solver_options,
-            decompose_ANC_lower_obj_stop=value_min_surplus,
+            decompose_ANC_lower_obj_stop=0.0,
         )
 
         # get the minimum surplus of the iteration
