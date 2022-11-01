@@ -1075,7 +1075,7 @@ function var_in_core(mode::IterMode, optimizer; kwargs...)
 
     # create the objective function for the problem
     function var_objective(m, player_set)
-        obj = sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2
+        obj = sqrt(sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2)
         @objective(m, Min, obj)
     end
 
@@ -1132,10 +1132,10 @@ function ref_in_core(
         # initialize dictionary for the normalization denominator
         norm_den = isnothing(norm) ? Dict(zip(player_set, fill(1.0, n_players))) : norm
 
-        obj = sum(
+        obj = sqrt(sum(
             ((m[:profit_dist][p] - ref_dist[p])/norm_den[p]).^2
             for p in player_set
-        )
+        ))
         @objective(m, Min, obj)
     end
 
