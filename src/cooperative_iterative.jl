@@ -616,6 +616,8 @@ mode : EnumMode
     Calculation mode: enumerative technique
 optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
+numerical_multiplier : Float (default 1e-3)
+    Multiplier to adjust numerical issues
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
 
@@ -626,13 +628,14 @@ specific_least_core_dist : Dict
 """
 function var_least_core(
         mode::IterMode,
-        optimizer; 
+        optimizer;
+        numerical_multiplier=0.001,
         kwargs...
     )
 
     # create the objective function for the problem
     function var_objective(m, player_set)
-        obj = sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2
+        obj = numerical_multiplier * sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2
         @objective(m, Min, obj)
     end
 
@@ -1063,6 +1066,8 @@ mode : IterMode
     Calculation mode: enumerative technique
 optimizer : Any
     Optimizer function for the JuMP model used for computation purposes
+numerical_multiplier : Float (default 1e-3)
+    Multiplier to adjust numerical issues
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
 
@@ -1071,11 +1076,11 @@ Outputs
 var_in_core : Dict
     Dictionary of the fair distributions of the profits among the players
 """
-function var_in_core(mode::IterMode, optimizer; kwargs...)
+function var_in_core(mode::IterMode, optimizer; numerical_multiplier=0.001, kwargs...)
 
     # create the objective function for the problem
     function var_objective(m, player_set)
-        obj = sqrt(sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2)
+        obj = numerical_multiplier * sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2
         @objective(m, Min, obj)
     end
 
@@ -1109,6 +1114,8 @@ norm : Any
     Normalization denominator for every player
     Default value nothing, hence for every player the Normalization
     factor is 1.0
+numerical_multiplier : Float (default 1e-3)
+    Multiplier to adjust numerical issues
 verbose : Bool (optional, default true)
     When true, it shows a progress bar to describe the current execution status
 
@@ -1122,6 +1129,7 @@ function ref_in_core(
         ref_dist,
         optimizer;
         norm=nothing,
+        numerical_multiplier=0.001,
         kwargs...
     )
 
@@ -1132,10 +1140,10 @@ function ref_in_core(
         # initialize dictionary for the normalization denominator
         norm_den = isnothing(norm) ? Dict(zip(player_set, fill(1.0, n_players))) : norm
 
-        obj = sqrt(sum(
+        obj = sum(
             ((m[:profit_dist][p] - ref_dist[p])/norm_den[p]).^2
             for p in player_set
-        ))
+        ) * numerical_multiplier
         @objective(m, Min, obj)
     end
 
