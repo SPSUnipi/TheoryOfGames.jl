@@ -635,7 +635,7 @@ function var_least_core(
 
     # create the objective function for the problem
     function var_objective(m, player_set)
-        obj = numerical_multiplier * sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2
+        obj = numerical_multiplier * (sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2)
         @objective(m, Min, obj)
     end
 
@@ -1080,7 +1080,7 @@ function var_in_core(mode::IterMode, optimizer; numerical_multiplier=0.001, kwar
 
     # create the objective function for the problem
     function var_objective(m, player_set)
-        obj = numerical_multiplier * sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2
+        obj = numerical_multiplier * (sum(m[:profit_dist].^2)/length(m[:profit_dist]) - sum(m[:profit_dist]/length(m[:profit_dist]))^2)
         @objective(m, Min, obj)
     end
 
