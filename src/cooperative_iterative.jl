@@ -185,7 +185,7 @@ function least_core(
             if looping_ongoing
                 println("Looping identified on the same solution, skipped option $best_objective_stop_option")
             else
-                best_obj_stop = value_min_surplus - abs(value_min_surplus) * best_objective_stop_tolerance * (1+rtol) - atol
+                best_obj_stop = value_min_surplus - max(abs(value_min_surplus) * best_objective_stop_tolerance, atol)
                 push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
             end
         end
@@ -476,7 +476,7 @@ function specific_least_core(
             if looping_ongoing
                 println("Looping identified on the same solution, skipped option $best_objective_stop_option")
             else
-                best_obj_stop = min_surplus - abs(min_surplus) * best_objective_stop_tolerance * (1+rtol) - atol
+                best_obj_stop = min_surplus - max(abs(min_surplus) * best_objective_stop_tolerance, atol)
                 push!(modify_solver_options, string(best_objective_stop_option)=>best_obj_stop)
             end
         end
@@ -764,7 +764,7 @@ best_objective_stop_option : String (optional, default nothing)
     This minimum objective value after which the solver shall return the solution
     is provided as the option best_objective_stop_value
     If gurobi is used, this option is BestObjStop
-best_objective_stop_value : Number (optional, default -0.01)
+best_objective_stop_value : Number (optional, default -1e75)
     Minimum objective function used for the solver to converge
     When the procedure starts looping
 lower_relaxation_stop_option : String (optional, default nothing)
@@ -798,7 +798,7 @@ function specific_in_core(
         preload_coalitions=[],
         exclude_visited_coalitions=true,
         best_objective_stop_option=nothing,
-        best_objective_stop_value=-0.01,
+        best_objective_stop_value=-1e75,
         lower_relaxation_stop_option=nothing,
         tolerance_lower_relaxation_stop=0.0,
         kwargs...
@@ -920,7 +920,7 @@ function specific_in_core(
         last_coalition = Set(output_data[1].least_profitable_coalition)
 
         # check if convergence has been reached: when the lower problem min surplus is non-negative
-        if lower_problem_min_surplus * (1+rtol) + atol >= 0
+        if lower_problem_min_surplus + max(abs(lower_problem_min_surplus) * rtol, atol) >= 0
             # convergence reached
             continue_while = false
 
@@ -1191,6 +1191,6 @@ function verify_in_core(
     lower_problem_min_surplus = out_data[1].min_surplus
 
     # if return value is nothing, the problem is infeasible, hence the solution does not belong to the core
-    return lower_problem_min_surplus*(1+rtol) + atol >= 0.0
+    return lower_problem_min_surplus + max(abs(lower_problem_min_surplus)*rtol, atol) >= 0.0
 end
 
