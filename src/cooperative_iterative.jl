@@ -764,7 +764,7 @@ best_objective_stop_option : String (optional, default nothing)
     This minimum objective value after which the solver shall return the solution
     is provided as the option best_objective_stop_value
     If gurobi is used, this option is BestObjStop
-best_objective_stop_value : Number (optional, default -1e75)
+best_objective_stop_value : Number (optional, default -1e-3)
     Minimum objective function used for the solver to converge
     When the procedure starts looping
 lower_relaxation_stop_option : String (optional, default nothing)
@@ -798,7 +798,7 @@ function specific_in_core(
         preload_coalitions=[],
         exclude_visited_coalitions=true,
         best_objective_stop_option=nothing,
-        best_objective_stop_value=-1e75,
+        best_objective_stop_value=-1e-3,
         lower_relaxation_stop_option=nothing,
         tolerance_lower_relaxation_stop=0.0,
         kwargs...
