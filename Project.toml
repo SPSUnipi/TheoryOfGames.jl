@@ -13,3 +13,9 @@ ProgressBars = "49802e3a-d2f1-5c88-81d8-b72133a6f568"
 
 [compat]
 julia = "1"
+Combinatorics = "1"
+ExportAll = "0.1"
+FileIO = "1"
+Formatting = "0"
+JuMP="1"
+ProgressBars="1.1 - 1.4"
