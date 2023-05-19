@@ -10,7 +10,7 @@
 
 """
     save(output_file::AbstractString, game_mode<:AbstractCalcMode)
-Function to save the Mode element of Games.jl
+Function to save the Mode element of TheoryOfGames.jl
 """
 function FileIO.save(output_file::AbstractString, game_mode::AbstractCalcMode)
     f_names = fieldnames(typeof(game_mode))

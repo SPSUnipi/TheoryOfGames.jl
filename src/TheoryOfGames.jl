@@ -1,4 +1,4 @@
-module Games
+module TheoryOfGames
 
 using ExportAll
 using Combinatorics

@@ -1,4 +1,4 @@
-using Games
+using TheoryOfGames
 using Test
 using YAML
 # using Gurobi
@@ -64,7 +64,7 @@ function to_IterMode(example)
             )]
         end
 
-        return Games.IterMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
+        return TheoryOfGames.IterMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
     end
 end
 
@@ -78,13 +78,13 @@ example_list = [
     Examples.three_users_mapping,
 ]
 
-@testset "Parallel enum mode" begin
+@testset "TheoryOfGames - Parallel enum mode" begin
     example = Examples.three_users_mapping
-    EnumMode(example.player_set, example.utility; parallel=true)
+    @test_logs EnumMode(example.player_set, example.utility; parallel=true)
 end
 
 
-@testset "Game tests - EnumMode" begin
+@testset "TheoryOfGames tests - EnumMode" begin
 
     @testset "shapley" begin
         println("TEST SET - SHAPLEY")
@@ -175,7 +175,7 @@ end
 
 end
 
-@testset "Games tests - IterMode" begin
+@testset "TheoryOfGames tests - IterMode" begin
     
     @testset "least_core" begin
         println("TEST SET - ROBUST LEAST CORE")
@@ -257,7 +257,7 @@ end
 
 end
 
-@testset "IO tests" begin
+@testset "TheoryOfGames - IO tests" begin
     
     println("TEST IO")
     for example in example_list

@@ -1,4 +1,4 @@
-![CI](https://github.com/davide-f/Games.jl/actions/workflows/CI.yml/badge.svg)
+![CI](https://github.com/davide-f/TheoryOfGames.jl/actions/workflows/CI.yml/badge.svg)
 
-# Games
+# TheoryOfGames
 A package for game theory

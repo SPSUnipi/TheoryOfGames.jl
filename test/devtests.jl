@@ -1,5 +1,5 @@
 using Revise
-using Games
+using TheoryOfGames
 # using Test
 # using HiGHS
 using JuMP
@@ -41,7 +41,7 @@ function to_IterMode(example)
             )]
         end
 
-        return Games.IterMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
+        return TheoryOfGames.IterMode(example.player_set, callback_benefit_by_coalition, callback_worst_coalition)
     end
 end
 
@@ -53,7 +53,7 @@ example = Examples.three_users_mapping
 player_set = example.player_set
 utility = example.utility
 
-enum_mode = Games.EnumMode(example.player_set, example.utility)
+enum_mode = TheoryOfGames.EnumMode(example.player_set, example.utility)
 
 # save("test.jld2", enum_mode)
 
