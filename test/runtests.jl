@@ -15,6 +15,9 @@ const ATOL_TEST = 1e-4
 const OPTIMIZER = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0, "tol"=>1e-6)
 # optimizer = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0)  #, "tol"=>1e-4)  #, "NonConvex"=>2)
 
+# print current path
+println("Current path: " * string(@__DIR__))
+
 "Function to test examples"
 function test_example(example_name, testing_function, args...; kwargs...)
     # calculate simulations
