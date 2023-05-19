@@ -15,12 +15,17 @@ const ATOL_TEST = 1e-4
 const OPTIMIZER = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0, "tol"=>1e-6)
 # optimizer = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0)  #, "tol"=>1e-4)  #, "NonConvex"=>2)
 
+const PARENT_FOLDER = string(@__DIR__)
+
+# print current path
+println("Current path: " * PARENT_FOLDER)
+
 "Function to test examples"
 function test_example(example_name, testing_function, args...; kwargs...)
     # calculate simulations
     calc_solution = testing_function(args...; kwargs...)
 
-    path_solution = (string(@__DIR__) * "\\testcases\\" * string(testing_function) * "\\" * example_name * ".yml")
+    path_solution = joinpath(PARENT_FOLDER, "testcases", string(testing_function), example_name * ".yml")
     
     if isfile(path_solution)
         # if the file exists run tests
