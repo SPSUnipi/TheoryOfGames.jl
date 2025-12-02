@@ -256,14 +256,14 @@ function nucleolus(
         # if option verbose update progress bar
         if verbose
             pbar.current = fixed_constraints
-            ProgressBars.display_progress(pbar)
+            ProgressBars.update(pbar)
         end
     end
 
     # if option verbose update progress bar
     if verbose
         pbar.current = fixed_constraints
-        ProgressBars.display_progress(pbar)
+        ProgressBars.update(pbar)
     end
 
     nuc_dist = Dict(zip(player_set, value.(profit_dist).data))
