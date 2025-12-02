@@ -3,7 +3,7 @@ module TheoryOfGames
 using ExportAll
 using Combinatorics
 using ProgressBars
-using Formatting
+using Format
 using JuMP
 using FileIO
 
