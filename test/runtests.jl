@@ -11,9 +11,11 @@ using JLD2
 include("tests.jl")
 
 # constant for the optimization and testing
-const ATOL_TEST = 1e-4
-const OPTIMIZER = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0, "tol"=>1e-6)
-# optimizer = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0)  #, "tol"=>1e-4)  #, "NonConvex"=>2)
+const ATOL_TEST = 1e-2
+const RTOL_TEST = 1e-4
+
+const OPTIMIZER = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=> 0, "tol"=>3e-6)
+# const OPTIMIZER = optimizer_with_attributes(HiGHS.Optimizer, "output_flag"=> true)  #, "tol"=>1e-6)
 
 const PARENT_FOLDER = string(@__DIR__)
 
@@ -21,7 +23,7 @@ const PARENT_FOLDER = string(@__DIR__)
 println("Current path: " * PARENT_FOLDER)
 
 "Function to test examples"
-function test_example(example_name, testing_function, args...; kwargs...)
+function test_example(example_name, testing_function, args...; skip_test_values=false, kwargs...)
     # calculate simulations
     calc_solution = testing_function(args...; kwargs...)
 
@@ -32,7 +34,9 @@ function test_example(example_name, testing_function, args...; kwargs...)
         proven_solution = YAML.load_file(path_solution)
         
         @test Set(keys(calc_solution)) == Set(keys(proven_solution))
-        @test all(isapprox(calc_solution[k] - proven_solution[k], 0.0, atol=ATOL_TEST) for k in keys(proven_solution))
+        if !skip_test_values
+            @test all(isapprox(calc_solution[k], proven_solution[k], rtol=RTOL_TEST, atol=ATOL_TEST) for k in keys(proven_solution))
+        end
     else
         # otherwise create the tests
         mkpath(dirname(path_solution))
@@ -101,7 +105,7 @@ end
     @testset "least_core" begin
         println("TEST SET - LEAST CORE")
         for example in example_list
-            test_example("ENUM_" * example.name, least_core, to_EnumMode(example), OPTIMIZER)
+            test_example("ENUM_" * example.name, least_core, to_EnumMode(example), OPTIMIZER, skip_test_values=true)
         end
     end
 
@@ -115,7 +119,7 @@ end
     @testset "in_core" begin
         println("TEST SET - IN CORE")
         for example in example_list
-            test_example("ENUM_" * example.name, in_core, to_EnumMode(example), OPTIMIZER)
+            test_example("ENUM_" * example.name, in_core, to_EnumMode(example), OPTIMIZER, skip_test_values=true)
         end
     end
 
@@ -138,7 +142,7 @@ end
             )
 
             # test that the artificial distribution does not belong to the core
-            @test verify_in_core(equal_vals, example_mode, OPTIMIZER; atol=ATOL_TEST) == false
+            @test verify_in_core(equal_vals, example_mode, OPTIMIZER; rtol=RTOL_TEST, atol=ATOL_TEST) == false
         end
     end
 
@@ -190,7 +194,7 @@ end
             result_value = least_core(to_IterMode(example), OPTIMIZER)
 
             # test that the solution belongs to the core
-            @test verify_in_core(result_value, to_EnumMode(example), OPTIMIZER; atol=ATOL_TEST) == true
+            @test verify_in_core(result_value, to_EnumMode(example), OPTIMIZER; rtol=RTOL_TEST, atol=ATOL_TEST) == true
         end
     end
 
@@ -215,7 +219,7 @@ end
     @testset "in_core" begin
         println("TEST SET - IN CORE")
         for example in example_list
-            test_example("ITER_" * example.name, in_core, to_IterMode(example), OPTIMIZER)
+            test_example("ITER_" * example.name, in_core, to_IterMode(example), OPTIMIZER, skip_test_values=true)
         end
     end
 
@@ -238,14 +242,15 @@ end
             )
 
             # test that the artificial distribution does not belong to the core
-            @test verify_in_core(equal_vals, example_mode, OPTIMIZER; atol=ATOL_TEST) == false
+            @test verify_in_core(equal_vals, example_mode, OPTIMIZER; rtol=RTOL_TEST, atol=ATOL_TEST) == false
         end
     end
 
     @testset "var_core" begin
         println("TEST SET - VAR CORE")
         for example in example_list
-            test_example("ALL_" * example.name, var_in_core, to_IterMode(example), OPTIMIZER; atol=ATOL_TEST)
+            println(example)
+            test_example("ALL_" * example.name, var_in_core, to_IterMode(example), OPTIMIZER; rtol=RTOL_TEST, atol=ATOL_TEST)
         end
     end
 

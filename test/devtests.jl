@@ -7,7 +7,6 @@ using Ipopt
 using YAML
 using FileIO
 using JLD2
-#using GLPK
 
 include("tests.jl")
 
