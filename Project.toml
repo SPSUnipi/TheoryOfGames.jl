@@ -1,7 +1,7 @@
 name = "TheoryOfGames"
 uuid = "eb50afb4-6f20-4b37-9b66-473e668300bf"
 authors = ["Davide Fioriti <fioritidavidesubs@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
