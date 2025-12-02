@@ -18,7 +18,7 @@ ExportAll = "0.1"
 FileIO = "1"
 Formatting = "0.4"
 JuMP = "1"
-ProgressBars = "1.1 - 1.4"
+ProgressBars = "1.5"
 
 [extras]
 HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
